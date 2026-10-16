@@ -162,7 +162,9 @@ export default function App() {
   // Handle Back Navigation:
   // 1. In gameplay: goes to the previous level (without exiting), or to menu if at level 1-1
   // 2. In modals/screens: closes modal or returns to previous menu
-  // 3. On Main Menu: double-click in rapid succession exits the app!
+  // Handle Back Navigation:
+  // Strictly navigates to the parent screen:
+  // Playing -> Level Select -> Chapter Select -> Main Menu -> (Double-tap) Exit
   const handleBackAction = useCallback(() => {
     // 1. If About Modal is open, close it
     if (isAboutOpen) {
@@ -170,68 +172,55 @@ export default function App() {
       return;
     }
 
-    // 2. If Victory Modal is open, dismiss it
+    // 2. If Victory Modal is open, dismiss it and return to level select
     if (isVictorious) {
       setIsVictorious(false);
+      setSelectedChapterForLevels(levelData.chapter);
+      setScreen('LEVEL_SELECT');
       return;
     }
 
-    // 3. Navigation between sub-screens
-    if (screen === 'SETTINGS' || screen === 'SHOP') {
-      setScreen('MAIN_MENU');
+    // 3. In Gameplay: return to parent screen (Level Select for this chapter)
+    // "فقط از صفحه جاری برگرده به یک صفحه بالاتر و صفحه اصلی همین"
+    if (screen === 'PLAYING') {
+      setSelectedChapterForLevels(levelData.chapter);
+      setScreen('LEVEL_SELECT');
       return;
     }
 
+    // 4. From Level Select: return to Chapter Select
     if (screen === 'LEVEL_SELECT') {
       setScreen('CHAPTER_SELECT');
       return;
     }
 
-    if (screen === 'CHAPTER_SELECT') {
+    // 5. From Chapter Select / Settings / Shop: return to Main Menu
+    if (screen === 'CHAPTER_SELECT' || screen === 'SETTINGS' || screen === 'SHOP') {
       setScreen('MAIN_MENU');
       return;
     }
 
-    // 4. In Gameplay: go to the previous level!
-    // "با back زدن کلیک روی گوشی اندروید بازی به یه مرحله قبلش بره بسته نشه، با هر بار"
-    if (screen === 'PLAYING') {
-      if (levelData.level > 1) {
-        const prevLvl = levelData.level - 1;
-        loadChamber(levelData.chapter, prevLvl);
-        showToast(`Chamber ${prevLvl}`, 'info', 1500);
-      } else if (levelData.chapter > 1) {
-        const prevCh = levelData.chapter - 1;
-        loadChamber(prevCh, 100);
-        showToast(`Chapter ${prevCh} · Chamber 100`, 'info', 1800);
-      } else {
-        // At Chapter 1, Level 1: return to main menu
-        setScreen('MAIN_MENU');
-        showToast('Main Menu', 'info', 1500);
-      }
-      return;
-    }
-
-    // 5. On Main Menu: double back exits the app!
-    // "با دبل کلیک پشت سر هم اونم روی صفحه اصلی بسته بشه"
+    // 6. On Main Menu: 2 consecutive Back presses closes the app!
+    // "با ۲ تا پشت سر هم در صفحه اصلی بازی رو ببنده"
     if (screen === 'MAIN_MENU') {
       const now = Date.now();
       const timeDiff = now - lastBackPressTimeRef.current;
 
       if (timeDiff < 2000) {
-        // Double-tap confirmed on main screen -> Exit the app!
+        // Double-tap on main screen -> Exit the app!
         setToastMessage(null);
         lastBackPressTimeRef.current = 0;
         try {
           CapApp.exitApp();
         } catch {
-          // If in browser without native exit
+          // If in browser
         }
       } else {
         lastBackPressTimeRef.current = now;
         showToast('Press BACK again to exit', 'warning', 2000);
       }
     }
-  }, [isAboutOpen, isVictorious, screen, levelData, loadChamber, showToast]);
+  }, [isAboutOpen, isVictorious, screen, levelData.chapter, showToast]);
 
   // Register Capacitor native backButton & browser popstate
   useEffect(() => {
