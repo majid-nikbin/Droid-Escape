@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Droid Escape</string>
+    <string name="title_activity_main">Droid Escape</string>
+    <string name="package_name">com.droidescape.puzzle</string>
+    <string name="custom_url_scheme">com.droidescape.puzzle</string>
+</resources>

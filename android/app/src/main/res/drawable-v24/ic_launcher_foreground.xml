@@ -1,0 +1,60 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Glowing Cyan Cubic Block Shadow -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M28,68 L54,82 L80,68 L54,54 Z" />
+
+    <!-- Isometric Puzzle Cube Top Face -->
+    <path
+        android:fillColor="#06B6D4"
+        android:pathData="M32,66 L54,77 L76,66 L54,55 Z" />
+
+    <!-- Isometric Puzzle Cube Left Face -->
+    <path
+        android:fillColor="#0284C7"
+        android:pathData="M32,66 L54,77 L54,89 L32,78 Z" />
+
+    <!-- Isometric Puzzle Cube Right Face -->
+    <path
+        android:fillColor="#0369A1"
+        android:pathData="M54,77 L76,66 L76,78 L54,89 Z" />
+
+    <!-- Cube Core Circuit Glow -->
+    <path
+        android:fillColor="#67E8F9"
+        android:pathData="M51,64 L57,67 L57,69 L51,66 Z" />
+
+    <!-- Android Mascot Left Antenna -->
+    <path
+        android:strokeColor="#34D399"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M44,36 L36,25" />
+
+    <!-- Android Mascot Right Antenna -->
+    <path
+        android:strokeColor="#34D399"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:pathData="M64,36 L72,25" />
+
+    <!-- Android Mascot Dome Head -->
+    <path
+        android:fillColor="#10B981"
+        android:pathData="M34,48 C34,37 43,28 54,28 C65,28 74,37 74,48 L34,48 Z" />
+
+    <!-- Left Glowing Eye -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M44,40 A3,3 0 1,1 44,39.99 Z" />
+
+    <!-- Right Glowing Eye -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M64,40 A3,3 0 1,1 64,39.99 Z" />
+</vector>

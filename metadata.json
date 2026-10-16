@@ -1,0 +1,6 @@
+{
+  "name": "Droid Escape - 2000 Puzzle Chambers",
+  "description": "A brain puzzle game featuring an Android droid moving cubic boxes to find the exit path across 20 chapters and 2000 levels with hints, authentic knock sounds, and ambient music.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

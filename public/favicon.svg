@@ -1,0 +1,88 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <radialGradient id="bgRadial" cx="50%" cy="45%" r="65%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="60%" stop-color="#020617" />
+      <stop offset="100%" stop-color="#000208" />
+    </radialGradient>
+
+    <!-- Emerald Android Gradient -->
+    <linearGradient id="droidHeadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#047857" />
+    </linearGradient>
+
+    <!-- Neon Cyan Cube Top -->
+    <linearGradient id="cubeTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+
+    <!-- Neon Cyan Cube Left Face -->
+    <linearGradient id="cubeLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+
+    <!-- Neon Cyan Cube Right Face -->
+    <linearGradient id="cubeRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0369a1" />
+      <stop offset="100%" stop-color="#075985" />
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Squircle Base for App Icon -->
+  <rect width="512" height="512" rx="112" fill="url(#bgRadial)" stroke="#1e293b" stroke-width="4" />
+
+  <!-- Outer Sci-Fi Frame Ring -->
+  <circle cx="256" cy="256" r="236" fill="none" stroke="#10b981" stroke-width="2" stroke-opacity="0.25" stroke-dasharray="12 8" />
+  <circle cx="256" cy="256" r="218" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-opacity="0.2" />
+
+  <!-- Cast Shadow Under Cube -->
+  <ellipse cx="256" cy="420" rx="160" ry="32" fill="#000000" opacity="0.6" filter="blur(10px)" />
+
+  <!-- 3D Isometric Puzzle Cube -->
+  <g transform="translate(0, 30)">
+    <!-- Top Face -->
+    <polygon points="256,220 390,285 256,350 122,285" fill="url(#cubeTop)" stroke="#67e8f9" stroke-width="3" />
+    <!-- Left Face -->
+    <polygon points="122,285 256,350 256,410 122,345" fill="url(#cubeLeft)" stroke="#0284c7" stroke-width="1.5" />
+    <!-- Right Face -->
+    <polygon points="256,350 390,285 390,345 256,410" fill="url(#cubeRight)" stroke="#0369a1" stroke-width="1.5" />
+    
+    <!-- Cube Core Circuit Emblem -->
+    <polygon points="256,260 290,277 256,295 222,277" fill="#67e8f9" opacity="0.9" filter="url(#neonGlow)" />
+  </g>
+
+  <!-- Android Droid Mascot (Emerging Heroically) -->
+  <g transform="translate(0, -10)">
+    <!-- Antennas with Neon Glow Tips -->
+    <line x1="210" y1="130" x2="168" y2="70" stroke="#34d399" stroke-width="14" stroke-linecap="round" />
+    <circle cx="168" cy="70" r="10" fill="#a7f3d0" filter="url(#neonGlow)" />
+
+    <line x1="302" y1="130" x2="344" y2="70" stroke="#34d399" stroke-width="14" stroke-linecap="round" />
+    <circle cx="344" cy="70" r="10" fill="#a7f3d0" filter="url(#neonGlow)" />
+
+    <!-- Droid Dome Head -->
+    <path d="M146,200 C146,139.2 195.2,90 256,90 C316.8,90 366,139.2 366,200 Z" fill="url(#droidHeadGrad)" stroke="#6ee7b7" stroke-width="3" />
+
+    <!-- Tech Collar Trim -->
+    <rect x="146" y="200" width="220" height="12" rx="6" fill="#065f46" />
+
+    <!-- Expressive Eyes (Glowing White/Cyan) -->
+    <circle cx="202" cy="155" r="14" fill="#ffffff" filter="url(#neonGlow)" />
+    <circle cx="202" cy="155" r="6" fill="#67e8f9" />
+
+    <circle cx="310" cy="155" r="14" fill="#ffffff" filter="url(#neonGlow)" />
+    <circle cx="310" cy="155" r="6" fill="#67e8f9" />
+  </g>
+</svg>
