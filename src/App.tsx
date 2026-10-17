@@ -27,6 +27,7 @@ import { Toast } from './components/Toast';
 
 const PROGRESS_STORAGE_KEY = 'droid_escape_progress_v1';
 const SOUND_STORAGE_KEY = 'droid_escape_sound_v1';
+const HARDCORE_STORAGE_KEY = 'droid_escape_hardcore_mode_v1';
 
 const INITIAL_PROGRESS: UserProgress = {
   currentChapter: 1,
@@ -77,9 +78,17 @@ export default function App() {
     return INITIAL_SOUND;
   });
 
+  const [isHardcore, setIsHardcore] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(HARDCORE_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   // Current Level Gameplay State
   const [levelData, setLevelData] = useState<LevelData>(() =>
-    generateLevel(progress.currentChapter, progress.currentLevel)
+    generateLevel(progress.currentChapter, progress.currentLevel, localStorage.getItem(HARDCORE_STORAGE_KEY) === 'true')
   );
   const [playerPos, setPlayerPos] = useState<Position>(levelData.playerStart);
   const [playerDir, setPlayerDir] = useState<Direction>('DOWN');
@@ -139,8 +148,9 @@ export default function App() {
   }, [levelData, boxes, playerPos]);
 
   // Load level helper
-  const loadChamber = useCallback((chapter: number, level: number) => {
-    const newLvl = generateLevel(chapter, level);
+  const loadChamber = useCallback((chapter: number, level: number, hardcoreOverride?: boolean) => {
+    const activeHardcore = hardcoreOverride !== undefined ? hardcoreOverride : isHardcore;
+    const newLvl = generateLevel(chapter, level, activeHardcore);
     setLevelData(newLvl);
     setPlayerPos(newLvl.playerStart);
     setPlayerDir('DOWN');
@@ -157,7 +167,26 @@ export default function App() {
       currentChapter: chapter,
       currentLevel: level,
     }));
-  }, []);
+  }, [isHardcore]);
+
+  // Toggle Hardcore Pro Mode (سخت‌ترین حالت بازی)
+  const toggleHardcore = useCallback(() => {
+    setIsHardcore(prev => {
+      const next = !prev;
+      try {
+        localStorage.setItem(HARDCORE_STORAGE_KEY, String(next));
+      } catch {
+        // Ignore
+      }
+      loadChamber(levelData.chapter, levelData.level, next);
+      showToast(
+        next ? '🔥 HARDCORE MODE: Maximum Complexity!' : '🌿 NORMAL MODE: Progressive Story',
+        next ? 'warning' : 'info',
+        2500
+      );
+      return next;
+    });
+  }, [levelData.chapter, levelData.level, loadChamber, showToast]);
 
   // Handle Back Navigation:
   // 1. In gameplay: goes to the previous level (without exiting), or to menu if at level 1-1
@@ -755,6 +784,8 @@ export default function App() {
             points={progress.points}
             helps={progress.helpsRemaining}
             soundSettings={soundSettings}
+            isHardcore={isHardcore}
+            onToggleHardcore={toggleHardcore}
             onBack={handleBackAction}
             onOpenShop={() => setScreen('SHOP')}
             onOpenSettings={() => setScreen('SETTINGS')}
@@ -784,6 +815,7 @@ export default function App() {
               onMove={handleMove}
               onMoveToCell={handleMoveToCell}
               laserActive={laserActive}
+              isHardcore={isHardcore}
             />
 
             {/* Quick Helper Label */}

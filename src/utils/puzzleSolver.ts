@@ -68,14 +68,10 @@ export function solvePuzzle(
     statesCount++;
     const current = queue.shift()!;
 
-    // Check win condition: droid reached exit AND if laser exists, laser must be deactivated
+    // Check win condition: droid reached exit AND all target power sockets/plates are filled!
     if (current.player.x === exitPos.x && current.player.y === exitPos.y) {
-      let laserSatisfied = true;
-      if (hasLaser && plates.length > 0) {
-        // At least one plate covered by a box
-        laserSatisfied = plates.some(pl => current.boxes.some(b => b.x === pl.x && b.y === pl.y));
-      }
-      if (laserSatisfied) {
+      const allPlatesCovered = plates.length === 0 || plates.every(pl => current.boxes.some(b => b.x === pl.x && b.y === pl.y));
+      if (allPlatesCovered) {
         return {
           solvable: true,
           minMoves: current.path.length,
