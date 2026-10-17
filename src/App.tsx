@@ -278,6 +278,14 @@ export default function App() {
     };
   }, [handleBackAction]);
 
+  // Check whether all target power sockets/plates have cores docked on them
+  const allPlatesCovered = levelData.plates.length === 0 || levelData.plates.every(pl =>
+    boxes.some(b => b.x === pl.x && b.y === pl.y)
+  );
+  const coveredPlatesCount = levelData.plates.filter(pl =>
+    boxes.some(b => b.x === pl.x && b.y === pl.y)
+  ).length;
+
   // Execute Player Movement & Box Pushing
   const handleMove = useCallback((dir: Direction) => {
     if (isVictorious) return;
@@ -315,7 +323,20 @@ export default function App() {
       return;
     }
 
-    // 4. Box collision check
+    // 4. Exit portal lock check (Requires all power sockets / plates to be filled)
+    const isExitTile = targetX === levelData.exitPos.x && targetY === levelData.exitPos.y;
+    const allPlatesCovered = levelData.plates.length === 0 || levelData.plates.every(pl =>
+      boxes.some(b => b.x === pl.x && b.y === pl.y)
+    );
+
+    if (isExitTile && !allPlatesCovered) {
+      sound.playBump();
+      const coveredCount = levelData.plates.filter(pl => boxes.some(b => b.x === pl.x && b.y === pl.y)).length;
+      showToast(`🔒 خروجی قفل است! همه هسته‌های مکعبی باید روی جایگاه‌ها قرار گیرند (${coveredCount}/${levelData.plates.length})`, 'warning', 2000);
+      return;
+    }
+
+    // 5. Box collision check
     const boxIndex = boxes.findIndex(b => b.x === targetX && b.y === targetY);
 
     if (boxIndex !== -1) {
@@ -372,6 +393,14 @@ export default function App() {
       // Check if pushed box landed on a pressure plate
       if (levelData.plates.some(pl => pl.x === pushX && pl.y === pushY)) {
         sound.playPlateClick();
+      }
+
+      // Check if all plates just became energized
+      const willAllCovered = levelData.plates.length === 0 || levelData.plates.every(pl =>
+        newBoxes.some(b => b.x === pl.x && b.y === pl.y)
+      );
+      if (levelData.plates.length > 0 && willAllCovered && !allPlatesCovered) {
+        showToast('⚡ تمام هسته‌ها مستقر شدند! دریچه خروج باز شد!', 'success', 2500);
       }
 
       // Update total boxes pushed stats
@@ -433,8 +462,7 @@ export default function App() {
     showToast,
   ]);
 
-  // Walk directly to a specifically clicked square (stops exactly on that square!)
-  // "ادمک با مسیر انگشت یا کلیک روی مربع مورد نظر حرکت کنه"
+  // Step intentionally towards a tapped square (adjacent step or directional nudge)
   const handleMoveToCell = useCallback((destX: number, destY: number) => {
     if (isVictorious) return;
     if (hintSteps.length > 0) setHintSteps([]);
@@ -453,56 +481,13 @@ export default function App() {
       return;
     }
 
-    // If in straight line and path is clear of walls and boxes, walk up to destination
-    if (dx === 0) {
-      const stepY = dy > 0 ? 1 : -1;
-      const count = Math.abs(dy);
-      let clear = true;
-      for (let i = 1; i <= count; i++) {
-        const cy = playerPos.y + i * stepY;
-        if (levelData.grid[cy]?.[destX] === 'WALL' || boxes.some(b => b.x === destX && b.y === cy)) {
-          clear = false;
-          break;
-        }
-      }
-      if (clear) {
-        for (let i = 0; i < count; i++) {
-          setTimeout(() => {
-            handleMove(stepY > 0 ? 'DOWN' : 'UP');
-          }, i * 85);
-        }
-      } else {
-        handleMove(dy > 0 ? 'DOWN' : 'UP');
-      }
-    } else if (dy === 0) {
-      const stepX = dx > 0 ? 1 : -1;
-      const count = Math.abs(dx);
-      let clear = true;
-      for (let i = 1; i <= count; i++) {
-        const cx = playerPos.x + i * stepX;
-        if (levelData.grid[destY]?.[cx] === 'WALL' || boxes.some(b => b.x === cx && b.y === destY)) {
-          clear = false;
-          break;
-        }
-      }
-      if (clear) {
-        for (let i = 0; i < count; i++) {
-          setTimeout(() => {
-            handleMove(stepX > 0 ? 'RIGHT' : 'LEFT');
-          }, i * 85);
-        }
-      } else {
-        handleMove(dx > 0 ? 'RIGHT' : 'LEFT');
-      }
+    // If tapped farther away: take 1 single discrete step in dominant direction
+    if (Math.abs(dx) >= Math.abs(dy)) {
+      handleMove(dx > 0 ? 'RIGHT' : 'LEFT');
     } else {
-      // Diagonal or corner tap: step in dominant direction
-      if (Math.abs(dx) >= Math.abs(dy)) {
-        handleMove(dx > 0 ? 'RIGHT' : 'LEFT');
-      } else {
-        handleMove(dy > 0 ? 'DOWN' : 'UP');
-      }
+      handleMove(dy > 0 ? 'DOWN' : 'UP');
     }
-  }, [playerPos, isVictorious, hintSteps, levelData, boxes, handleMove]);
+  }, [isVictorious, hintSteps, playerPos, handleMove]);
 
   // Handle Chamber Victory
   const handleChamberVictory = (finalMoves: number) => {
@@ -816,11 +801,32 @@ export default function App() {
               onMoveToCell={handleMoveToCell}
               laserActive={laserActive}
               isHardcore={isHardcore}
+              isExitUnlocked={allPlatesCovered}
+              coveredPlatesCount={coveredPlatesCount}
             />
+
+            {/* Tactical Power Core Status Bar */}
+            {levelData.plates.length > 0 && (
+              <div className="w-full max-w-sm mx-auto mt-2 flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono shadow-md select-none">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${allPlatesCovered ? 'bg-emerald-400 shadow-[0_0_8px_#10b981]' : 'bg-amber-400 animate-pulse'}`} />
+                  <span className="text-slate-300">
+                    POWER CORES: <b className={allPlatesCovered ? 'text-emerald-300' : 'text-white'}>{coveredPlatesCount} / {levelData.plates.length}</b>
+                  </span>
+                </div>
+                <div className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+                  allPlatesCovered
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse'
+                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                }`}>
+                  {allPlatesCovered ? '⚡ EXIT UNSEALED' : '🔒 EXIT LOCKED'}
+                </div>
+              </div>
+            )}
 
             {/* Quick Helper Label */}
             <div className="text-center mt-1 text-[11px] text-slate-500 font-medium hidden sm:block">
-              Touch/Click adjacent cell or swipe to move · [Z] Undo · [R] Reset · [H] Hint
+              Swipe or tap adjacent cell to move · [Z] Undo · [R] Reset · [H] Hint
             </div>
           </div>
 

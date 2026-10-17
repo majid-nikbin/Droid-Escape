@@ -43,7 +43,7 @@ export function solvePuzzle(
   laserPos?: Position,
   plates: Position[] = [],
   fixedObstacles: Position[] = [],
-  maxSearchStates = 8000
+  maxSearchStates = 25000
 ): SolverResult {
   // If player is already on exit
   if (initialPlayer.x === exitPos.x && initialPlayer.y === exitPos.y) {
