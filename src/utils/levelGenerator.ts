@@ -201,7 +201,27 @@ export function generateLevel(chapter: number, level: number, isHardcore = false
     height = 8;
     exitPos = { x: 6, y: 1 };
 
-    if (archetype === 0 || archetype === 3) {
+    if (chapter === 1 && level === 1 && !isHardcore) {
+      // CHAPTER 1 LEVEL 1: Gentle Induction Chamber (14 moves, 4 pushes)
+      width = 7;
+      height = 7;
+      walls = [{ x: 3, y: 3 }];
+      plateCoords = [{ x: 3, y: 2 }, { x: 4, y: 3 }];
+      boxCoords = [{ x: 2, y: 3 }, { x: 3, y: 4 }];
+      playerStart = { x: 2, y: 2 };
+      exitPos = { x: 5, y: 5 };
+      description = 'Induction Chamber: Guide both energy cores onto target sockets to release the exit seal.';
+    } else if (chapter === 1 && level === 2 && !isHardcore) {
+      // CHAPTER 1 LEVEL 2: Cross Axis Docking (10 moves, 2 pushes)
+      width = 7;
+      height = 7;
+      walls = [{ x: 3, y: 3 }, { x: 3, y: 5 }];
+      plateCoords = [{ x: 2, y: 2 }, { x: 4, y: 4 }];
+      boxCoords = [{ x: 3, y: 2 }, { x: 3, y: 4 }];
+      playerStart = { x: 2, y: 3 };
+      exitPos = { x: 5, y: 1 };
+      description = 'Cross Axis Docking: Maneuver past the reactor divider and dock both power units.';
+    } else if (archetype === 0 || archetype === 3) {
       // Dual Chamber with Vertical Divider and 2 doorways
       walls = [
         { x: 4, y: 2 }, { x: 4, y: 3 }, { x: 4, y: 5 },
@@ -236,10 +256,12 @@ export function generateLevel(chapter: number, level: number, isHardcore = false
       description = 'Transverse Conduit: Guide both cores from the lower loading dock across the flank channels.';
     }
 
-    const grid = createEmptyGrid(width, height, walls);
-    const pulled = runReversePulls(width, height, grid, plateCoords, { x: 5, y: 3 }, isHardcore ? 35 : 25, rng);
-    boxCoords = pulled.boxes;
-    playerStart = pulled.player;
+    if (boxCoords.length === 0) {
+      const grid = createEmptyGrid(width, height, walls);
+      const pulled = runReversePulls(width, height, grid, plateCoords, { x: 5, y: 3 }, isHardcore ? 35 : 25, rng);
+      boxCoords = pulled.boxes;
+      playerStart = pulled.player;
+    }
 
   } else if (chapter <= 7) {
     // CHAPTERS 4-7: Tri-Chamber Labyrinths, S-Corridors & Laser Gates (2-3 Cores)

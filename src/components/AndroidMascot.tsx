@@ -49,14 +49,14 @@ export const AndroidMascot: React.FC<AndroidMascotProps> = ({
         isMoving ? 'scale-95' : 'scale-100 hover:scale-105'
       } ${isVictorious ? 'animate-bounce' : ''}`}
     >
-      {/* Dynamic Hover / Thruster Energy Glow beneath Droid */}
+      {/* Soft Ground Shadow beneath Droid */}
       <div 
-        className={`absolute bottom-0 w-3/4 h-3 rounded-full blur-[3px] transition-all duration-200 ${
+        className={`absolute bottom-0 w-3/4 h-2.5 rounded-full blur-[2px] transition-all duration-200 ${
           isVictorious
-            ? 'bg-amber-400/70 shadow-[0_0_16px_#f59e0b]'
+            ? 'bg-amber-500/25'
             : isMoving
-            ? 'bg-emerald-400/80 shadow-[0_0_12px_#10b981]'
-            : 'bg-emerald-500/40 shadow-[0_0_8px_#10b981]'
+            ? 'bg-emerald-600/30'
+            : 'bg-slate-700/20'
         }`} 
       />
 
@@ -71,12 +71,13 @@ export const AndroidMascot: React.FC<AndroidMascotProps> = ({
       >
         <svg
           viewBox="0 0 100 115"
-          className="w-full h-full drop-shadow-[0_6px_12px_rgba(16,185,129,0.45)]"
+          className="w-full h-full drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]"
           style={{
             transform: `rotate(${getHeadTilt()}deg)`,
             transition: 'transform 0.15s ease-out',
           }}
         >
+
           <defs>
             {/* Android Signature Lime/Emerald Luxury Gradients */}
             <linearGradient id="droidHeadGrad" x1="0" y1="0" x2="0" y2="1">

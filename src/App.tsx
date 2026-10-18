@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { App as CapApp } from '@capacitor/app';
+import { Play, Pause, X } from 'lucide-react';
 import { 
   Direction, 
   LevelData, 
@@ -99,6 +100,10 @@ export default function App() {
   const [isVictorious, setIsVictorious] = useState<boolean>(false);
   const [hintSteps, setHintSteps] = useState<HintStep[]>([]);
   const [laserActive, setLaserActive] = useState<boolean>(false);
+  const [fullSolutionMoves, setFullSolutionMoves] = useState<Direction[]>([]);
+  const [isSolutionAutoPlaying, setIsSolutionAutoPlaying] = useState<boolean>(false);
+  const solutionTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoWalkTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Toast & Double-Back State
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -149,6 +154,17 @@ export default function App() {
 
   // Load level helper
   const loadChamber = useCallback((chapter: number, level: number, hardcoreOverride?: boolean) => {
+    if (solutionTimerRef.current) {
+      clearInterval(solutionTimerRef.current);
+      solutionTimerRef.current = null;
+    }
+    if (autoWalkTimerRef.current) {
+      clearInterval(autoWalkTimerRef.current);
+      autoWalkTimerRef.current = null;
+    }
+    setFullSolutionMoves([]);
+    setIsSolutionAutoPlaying(false);
+
     const activeHardcore = hardcoreOverride !== undefined ? hardcoreOverride : isHardcore;
     const newLvl = generateLevel(chapter, level, activeHardcore);
     setLevelData(newLvl);
@@ -169,7 +185,7 @@ export default function App() {
     }));
   }, [isHardcore]);
 
-  // Toggle Hardcore Pro Mode (سخت‌ترین حالت بازی)
+  // Toggle Hardcore Pro Mode (Maximum Difficulty)
   const toggleHardcore = useCallback(() => {
     setIsHardcore(prev => {
       const next = !prev;
@@ -210,7 +226,6 @@ export default function App() {
     }
 
     // 3. In Gameplay: return to parent screen (Level Select for this chapter)
-    // "فقط از صفحه جاری برگرده به یک صفحه بالاتر و صفحه اصلی همین"
     if (screen === 'PLAYING') {
       setSelectedChapterForLevels(levelData.chapter);
       setScreen('LEVEL_SELECT');
@@ -229,8 +244,7 @@ export default function App() {
       return;
     }
 
-    // 6. On Main Menu: 2 consecutive Back presses closes the app!
-    // "با ۲ تا پشت سر هم در صفحه اصلی بازی رو ببنده"
+    // 6. On Main Menu: 2 consecutive Back presses within 2 seconds closes the app
     if (screen === 'MAIN_MENU') {
       const now = Date.now();
       const timeDiff = now - lastBackPressTimeRef.current;
@@ -332,7 +346,7 @@ export default function App() {
     if (isExitTile && !allPlatesCovered) {
       sound.playBump();
       const coveredCount = levelData.plates.filter(pl => boxes.some(b => b.x === pl.x && b.y === pl.y)).length;
-      showToast(`🔒 خروجی قفل است! همه هسته‌های مکعبی باید روی جایگاه‌ها قرار گیرند (${coveredCount}/${levelData.plates.length})`, 'warning', 2000);
+      showToast(`Exit sealed! Place all cores on docking plates (${coveredCount}/${levelData.plates.length})`, 'warning', 2500);
       return;
     }
 
@@ -397,7 +411,7 @@ export default function App() {
 
       // Check if pushed box entered a corner deadlock
       if (isBoxDeadlocked({ x: pushX, y: pushY }, levelData.width, levelData.height, levelData.grid, levelData.plates)) {
-        showToast('⚠️ بن‌بست! این هسته در گوشه قفل شد. دکمه بازگشت (Undo) را بزنید.', 'warning', 3000);
+        showToast('Deadlock detected! Box trapped in corner. Press Undo.', 'warning', 3000);
       }
 
       // Check if all plates just became energized
@@ -406,7 +420,7 @@ export default function App() {
       );
 
       if (willAllCovered && !allPlatesCovered) {
-        showToast('⚡ تمام هسته‌ها مستقر شدند! اتاق با موفقیت پاکسازی شد!', 'success', 3000);
+        showToast('All power cores docked! Chamber cleared!', 'success', 3000);
         setTimeout(() => {
           handleChamberVictory(movesCount + 1);
         }, 500);
@@ -471,7 +485,7 @@ export default function App() {
     showToast,
   ]);
 
-  // Step intentionally towards a tapped square (adjacent step or directional nudge)
+  // Step intentionally towards a tapped square (adjacent step or directional push)
   const handleMoveToCell = useCallback((destX: number, destY: number) => {
     if (isVictorious) return;
     if (hintSteps.length > 0) setHintSteps([]);
@@ -490,6 +504,79 @@ export default function App() {
     }
   }, [isVictorious, hintSteps, playerPos, handleMove]);
 
+  // Double-click / double-tap auto-walk: paths the droid directly to any reachable cell
+  const handleAutoWalk = useCallback((destX: number, destY: number) => {
+    if (isVictorious) return;
+    if (autoWalkTimerRef.current) {
+      clearInterval(autoWalkTimerRef.current);
+      autoWalkTimerRef.current = null;
+    }
+
+    if (destX < 0 || destX >= levelData.width || destY < 0 || destY >= levelData.height) return;
+    if (levelData.grid[destY]?.[destX] === 'WALL') return;
+    if (boxes.some(b => b.x === destX && b.y === destY)) return;
+    if (laserActive && levelData.laserPos && destX === levelData.laserPos.x && destY === levelData.laserPos.y) return;
+
+    // BFS to find path through empty spaces and plates
+    const DIRS_MAP: { dir: Direction; dx: number; dy: number }[] = [
+      { dir: 'UP', dx: 0, dy: -1 },
+      { dir: 'DOWN', dx: 0, dy: 1 },
+      { dir: 'LEFT', dx: -1, dy: 0 },
+      { dir: 'RIGHT', dx: 1, dy: 0 },
+    ];
+
+    const queue: { pos: Position; path: Direction[] }[] = [
+      { pos: { ...playerPos }, path: [] },
+    ];
+    const visited = new Set<string>();
+    visited.add(`${playerPos.x},${playerPos.y}`);
+
+    let foundPath: Direction[] | null = null;
+    while (queue.length > 0) {
+      const cur = queue.shift()!;
+      if (cur.pos.x === destX && cur.pos.y === destY) {
+        foundPath = cur.path;
+        break;
+      }
+
+      for (const { dir, dx, dy } of DIRS_MAP) {
+        const nx = cur.pos.x + dx;
+        const ny = cur.pos.y + dy;
+        if (nx < 0 || nx >= levelData.width || ny < 0 || ny >= levelData.height) continue;
+        if (levelData.grid[ny][nx] === 'WALL') continue;
+        if (boxes.some(b => b.x === nx && b.y === ny)) continue;
+        if (laserActive && levelData.laserPos && nx === levelData.laserPos.x && ny === levelData.laserPos.y) continue;
+
+        const key = `${nx},${ny}`;
+        if (!visited.has(key)) {
+          visited.add(key);
+          queue.push({ pos: { x: nx, y: ny }, path: [...cur.path, dir] });
+        }
+      }
+    }
+
+    if (!foundPath || foundPath.length === 0) {
+      sound.playBump();
+      showToast('No clear path to destination square.', 'warning', 1500);
+      return;
+    }
+
+    // Step sequentially along the path
+    let stepIndex = 0;
+    autoWalkTimerRef.current = setInterval(() => {
+      if (stepIndex >= foundPath!.length) {
+        if (autoWalkTimerRef.current) {
+          clearInterval(autoWalkTimerRef.current);
+          autoWalkTimerRef.current = null;
+        }
+        return;
+      }
+      const dir = foundPath![stepIndex];
+      handleMove(dir);
+      stepIndex++;
+    }, 65);
+  }, [isVictorious, levelData, boxes, laserActive, playerPos, handleMove, showToast]);
+
   // Handle Chamber Victory
   const handleChamberVictory = (finalMoves: number) => {
     setIsVictorious(true);
@@ -498,7 +585,7 @@ export default function App() {
     const currentKey = `${levelData.chapter}-${levelData.level}`;
     const stars = finalMoves <= levelData.parMoves ? 3 : finalMoves <= levelData.parMoves + 4 ? 2 : 1;
 
-    // "با هر بار اتمام یک قسمت ۱ امتیاز برایش لحاظ گردد" -> Always award +1 point per level!
+    // Always award +1 point per completed level
     setProgress(prev => {
       const alreadyCompleted = !!prev.levelsCompleted[currentKey];
       const newPoints = prev.points + 1; // +1 point on each level completion
@@ -551,6 +638,16 @@ export default function App() {
 
   // Reset Current Level
   const handleResetLevel = useCallback(() => {
+    if (solutionTimerRef.current) {
+      clearInterval(solutionTimerRef.current);
+      solutionTimerRef.current = null;
+    }
+    if (autoWalkTimerRef.current) {
+      clearInterval(autoWalkTimerRef.current);
+      autoWalkTimerRef.current = null;
+    }
+    setFullSolutionMoves([]);
+    setIsSolutionAutoPlaying(false);
     setPlayerPos(levelData.playerStart);
     setPlayerDir('DOWN');
     setBoxes(levelData.initialBoxes);
@@ -563,21 +660,18 @@ export default function App() {
     showToast('Chamber Reset', 'info', 1000);
   }, [levelData, showToast]);
 
-  // Use Hint (Help)
-  // "بازی از ۳ پیشنهاد اولیه برای کمک اتمام قسمت بازی تشکیل شده باشد، و پس از استفاده از این سه گزینه ... با هر ۱۰ امتیاز امکان ، خرید یک help بازی را داشته باشد"
+  // Use Hint (Help) - Reveals full solution with auto-solve playback
   const handleHint = useCallback(() => {
     if (progress.helpsRemaining <= 0) {
-      showToast('No Helps remaining! Buy more in the Shop with 10 Points.', 'warning', 2500);
+      showToast('No Hints remaining! Buy more in the Shop with 10 Points.', 'warning', 2500);
       setScreen('SHOP');
       return;
     }
 
-    // Separate movable boxes and fixed steel barriers
     const movableBoxes = boxes.filter(b => b.type !== 'FIXED').map(b => ({ x: b.x, y: b.y }));
     const fixedBoxes = boxes.filter(b => b.type === 'FIXED').map(b => ({ x: b.x, y: b.y }));
 
-    // Compute optimal solution from current game state
-    const result = solvePuzzle(
+    let result = solvePuzzle(
       levelData.width,
       levelData.height,
       levelData.grid,
@@ -588,8 +682,38 @@ export default function App() {
       levelData.laserPos,
       levelData.plates,
       fixedBoxes,
-      15000
+      35000
     );
+
+    // If current position is deadlocked/unsolvable, solve from the start of the chamber!
+    let usingReset = false;
+    if (!result.solvable || result.solutionMoves.length === 0) {
+      usingReset = true;
+      setPlayerPos(levelData.playerStart);
+      setPlayerDir('DOWN');
+      setBoxes(levelData.initialBoxes);
+      setMovesCount(0);
+      setMoveHistory([]);
+      setIsMoving(false);
+      setIsVictorious(false);
+
+      const initialMovable = levelData.initialBoxes.filter(b => b.type !== 'FIXED').map(b => ({ x: b.x, y: b.y }));
+      const initialFixed = levelData.initialBoxes.filter(b => b.type === 'FIXED').map(b => ({ x: b.x, y: b.y }));
+
+      result = solvePuzzle(
+        levelData.width,
+        levelData.height,
+        levelData.grid,
+        levelData.playerStart,
+        initialMovable,
+        levelData.exitPos,
+        levelData.hasLaser,
+        levelData.laserPos,
+        levelData.plates,
+        initialFixed,
+        45000
+      );
+    }
 
     if (result.solvable && result.solutionMoves.length > 0) {
       // Consume 1 Help
@@ -602,10 +726,14 @@ export default function App() {
         },
       }));
 
+      // Store complete solution moves
+      setFullSolutionMoves(result.solutionMoves);
+
       // Generate sequence of visual hint arrows
       const steps: HintStep[] = [];
-      let cur = { ...playerPos };
-      const showCount = Math.min(result.solutionMoves.length, 5); // show up to 5 steps
+      const startP = usingReset ? { ...levelData.playerStart } : { ...playerPos };
+      let cur = { ...startP };
+      const showCount = Math.min(result.solutionMoves.length, 8);
 
       for (let i = 0; i < showCount; i++) {
         const moveDir = result.solutionMoves[i];
@@ -627,12 +755,50 @@ export default function App() {
 
       setHintSteps(steps);
       sound.playHintSound();
-      showToast(`Hint: Follow arrows 1 → ${showCount} (${result.minMoves} moves to exit)`, 'success', 3500);
+      showToast(
+        usingReset
+          ? `Chamber reset to start. Complete ${result.solutionMoves.length}-move solution ready! Tap Auto-Solve to watch.`
+          : `Solution guide active (${result.solutionMoves.length} moves). Tap Auto-Solve to clear!`,
+        'success',
+        3500
+      );
     } else {
       sound.playBump();
-      showToast('Deadlock detected! Press Undo (↩) or Reset (🔄) to recover.', 'warning', 3000);
+      showToast('Deadlock detected! Press Reset (🔄) to restart chamber.', 'warning', 3000);
     }
   }, [progress.helpsRemaining, levelData, playerPos, boxes, showToast]);
+
+  // Toggle Auto-Play of Solution
+  const handleToggleAutoPlaySolution = useCallback(() => {
+    if (isSolutionAutoPlaying) {
+      if (solutionTimerRef.current) {
+        clearInterval(solutionTimerRef.current);
+        solutionTimerRef.current = null;
+      }
+      setIsSolutionAutoPlaying(false);
+      showToast('Solution playback paused.', 'info', 1500);
+    } else {
+      if (fullSolutionMoves.length === 0) return;
+      setIsSolutionAutoPlaying(true);
+      showToast('Auto-solving chamber... Watch the solution!', 'success', 2000);
+
+      let stepIdx = 0;
+      solutionTimerRef.current = setInterval(() => {
+        if (stepIdx >= fullSolutionMoves.length || isVictorious) {
+          if (solutionTimerRef.current) {
+            clearInterval(solutionTimerRef.current);
+            solutionTimerRef.current = null;
+          }
+          setIsSolutionAutoPlaying(false);
+          return;
+        }
+
+        const nextDir = fullSolutionMoves[stepIdx];
+        handleMove(nextDir);
+        stepIdx++;
+      }, 180);
+    }
+  }, [isSolutionAutoPlaying, fullSolutionMoves, isVictorious, handleMove, showToast]);
 
   // Shop purchase handler: 10 points = 1 help
   const handleBuyHelp = useCallback((amount: number, cost: number): boolean => {
@@ -645,8 +811,7 @@ export default function App() {
     return true;
   }, [progress.points]);
 
-  // Master Developer Unlock: 5 clicks on "M-Tech" in About + Passcode 2450
-  // "با ۵ بار کلیک روی این developer رمز درخواست کنه و با ورود عدد 2450 همه level های بازی قابل دسترسی بشه"
+  // Master Developer Unlock: 5 clicks on "M-Tech" in About + Passcode 2450 unlocks all 2000 levels
   const handleDeveloperUnlock = useCallback(() => {
     sound.playVictory();
 
@@ -734,7 +899,7 @@ export default function App() {
   }, [screen, handleMove, handleUndo, handleResetLevel, handleHint, handleBackAction]);
 
   return (
-    <div className="w-full min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none overflow-x-hidden">
+    <div className="w-full min-h-screen bg-gradient-to-b from-[#181d28] via-[#212738] to-[#181d28] text-slate-100 flex flex-col font-sans select-none overflow-x-hidden">
       {/* Floating Toast Notification */}
       <Toast message={toastMessage} type={toastType} />
 
@@ -788,8 +953,45 @@ export default function App() {
             }}
           />
 
-          {/* Center Chamber GameBoard */}
+          {/* Center Chamber GameBoard Container */}
           <div className="flex-1 flex flex-col items-center justify-center p-2">
+            {/* Interactive Solution Guide Bar */}
+            {fullSolutionMoves.length > 0 && !isVictorious && (
+              <div className="w-full max-w-sm mx-auto mb-2 p-2.5 rounded-2xl bg-[#232b3b] border border-amber-500/50 shadow-md flex items-center justify-between gap-2 text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
+                  <span className="font-bold text-amber-200">
+                    Solution: {fullSolutionMoves.length} moves
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={handleToggleAutoPlaySolution}
+                    className={`flex items-center gap-1 px-3 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95 shadow-sm ${
+                      isSolutionAutoPlaying
+                        ? 'bg-rose-500 text-white hover:bg-rose-600'
+                        : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
+                    }`}
+                  >
+                    {isSolutionAutoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+                    <span>{isSolutionAutoPlaying ? 'Pause' : 'Auto-Solve'}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (solutionTimerRef.current) clearInterval(solutionTimerRef.current);
+                      setFullSolutionMoves([]);
+                      setHintSteps([]);
+                      setIsSolutionAutoPlaying(false);
+                    }}
+                    className="p-1.5 rounded-xl bg-slate-800 text-slate-400 hover:text-white"
+                    title="Close Solution Guide"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             <GameBoard
               level={levelData}
               playerPos={playerPos}
@@ -800,6 +1002,7 @@ export default function App() {
               hintSteps={hintSteps}
               onMove={handleMove}
               onMoveToCell={handleMoveToCell}
+              onAutoWalk={handleAutoWalk}
               laserActive={laserActive}
               isHardcore={isHardcore}
               isExitUnlocked={allPlatesCovered}
@@ -808,16 +1011,16 @@ export default function App() {
 
             {/* Tactical Power Core Status Bar */}
             {levelData.plates.length > 0 && (
-              <div className="w-full max-w-sm mx-auto mt-2 flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-mono shadow-md select-none">
+              <div className="w-full max-w-sm mx-auto mt-2 flex items-center justify-between px-3 py-1.5 rounded-xl bg-[#1e2433] border border-slate-700/60 text-xs font-mono shadow-sm select-none">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${allPlatesCovered ? 'bg-emerald-400 shadow-[0_0_8px_#10b981]' : 'bg-amber-400 animate-pulse'}`} />
+                  <span className={`w-2 h-2 rounded-full ${allPlatesCovered ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
                   <span className="text-slate-300">
-                    POWER CORES: <b className={allPlatesCovered ? 'text-emerald-300' : 'text-white'}>{coveredPlatesCount} / {levelData.plates.length}</b>
+                    POWER CORES: <b className={allPlatesCovered ? 'text-emerald-300' : 'text-amber-200'}>{coveredPlatesCount} / {levelData.plates.length}</b>
                   </span>
                 </div>
                 <div className={`text-[11px] font-bold px-2 py-0.5 rounded ${
                   allPlatesCovered
-                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                     : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                 }`}>
                   {allPlatesCovered ? '⚡ EXIT UNSEALED' : '🔒 EXIT LOCKED'}
@@ -826,17 +1029,16 @@ export default function App() {
             )}
 
             {/* Quick Helper Label */}
-            <div className="text-center mt-1 text-[11px] text-slate-500 font-medium hidden sm:block">
-              Swipe or tap adjacent cell to move · [Z] Undo · [R] Reset · [H] Hint
+            <div className="text-center mt-1 text-[11px] text-slate-400 font-medium hidden sm:block">
+              Swipe to move · Double-tap tile to walk · [Z] Undo · [R] Reset · [H] Hint
             </div>
           </div>
 
-          {/* Minimal Bottom Action Bar (Undo, Reset, Hint, 4-Way D-Pad) */}
+          {/* Minimal Bottom Action Bar (Undo, Reset, Hint) */}
           <DPadControls
             onUndo={handleUndo}
             onReset={handleResetLevel}
             onHint={handleHint}
-            onMove={handleMove}
             canUndo={moveHistory.length > 0 && !isVictorious}
             hintsRemaining={progress.helpsRemaining}
           />

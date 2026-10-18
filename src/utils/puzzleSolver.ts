@@ -1,4 +1,4 @@
-import { Direction, Position, CellType } from '../types/game';
+import { Direction, Position, CellType, SolutionPushStep } from '../types/game';
 
 interface SolverState {
   player: Position;
@@ -24,8 +24,10 @@ export interface SolverResult {
   minMoves: number;
   pushes: number;
   solutionMoves: Direction[];
+  solutionPushes: SolutionPushStep[];
   nextMove?: Direction;
 }
+
 
 export function isBoxDeadlocked(
   box: Position,
@@ -70,7 +72,7 @@ export function solvePuzzle(
     plates.length > 0 &&
     plates.every(pl => initialMovableBoxes.some(b => b.x === pl.x && b.y === pl.y));
   if (initialAllPlatesCovered) {
-    return { solvable: true, minMoves: 0, pushes: 0, solutionMoves: [] };
+    return { solvable: true, minMoves: 0, pushes: 0, solutionMoves: [], solutionPushes: [] };
   }
 
   const queue: SolverState[] = [
@@ -99,26 +101,31 @@ export function solvePuzzle(
         current.boxes.some(b => b.x === pl.x && b.y === pl.y)
       );
       if (allPlatesCovered) {
+        const pushes = extractPushSteps(initialPlayer, initialMovableBoxes, current.path);
         return {
           solvable: true,
           minMoves: current.path.length,
           pushes: current.pushes,
           solutionMoves: current.path,
+          solutionPushes: pushes,
           nextMove: current.path[0],
         };
       }
     } else {
       // If no plates, reaching exit is win condition
       if (current.player.x === exitPos.x && current.player.y === exitPos.y) {
+        const pushes = extractPushSteps(initialPlayer, initialMovableBoxes, current.path);
         return {
           solvable: true,
           minMoves: current.path.length,
           pushes: current.pushes,
           solutionMoves: current.path,
+          solutionPushes: pushes,
           nextMove: current.path[0],
         };
       }
     }
+
 
     // Determine if laser is currently blocking
     let laserActive = false;
@@ -205,6 +212,44 @@ export function solvePuzzle(
     minMoves: 0,
     pushes: 0,
     solutionMoves: [],
+    solutionPushes: [],
   };
 }
+
+export function extractPushSteps(
+  initialPlayer: Position,
+  initialBoxes: Position[],
+  moves: Direction[]
+): SolutionPushStep[] {
+  const pushes: SolutionPushStep[] = [];
+  let p = { ...initialPlayer };
+  let b = initialBoxes.map(box => ({ ...box }));
+  const delta: Record<Direction, { dx: number; dy: number }> = {
+    UP: { dx: 0, dy: -1 },
+    DOWN: { dx: 0, dy: 1 },
+    LEFT: { dx: -1, dy: 0 },
+    RIGHT: { dx: 1, dy: 0 },
+  };
+
+  for (const dir of moves) {
+    const d = delta[dir];
+    const nextPlayer = { x: p.x + d.dx, y: p.y + d.dy };
+    const boxIdx = b.findIndex(box => box.x === nextPlayer.x && box.y === nextPlayer.y);
+    if (boxIdx !== -1) {
+      const nextBox = { x: nextPlayer.x + d.dx, y: nextPlayer.y + d.dy };
+      pushes.push({
+        pushNumber: pushes.length + 1,
+        boxIdx,
+        from: { ...b[boxIdx] },
+        to: nextBox,
+        dir,
+        playerApproachPos: { ...p },
+      });
+      b[boxIdx] = nextBox;
+    }
+    p = nextPlayer;
+  }
+  return pushes;
+}
+
 

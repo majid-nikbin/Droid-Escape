@@ -60,6 +60,16 @@ export interface MoveStep {
   };
 }
 
+export interface SolutionPushStep {
+  pushNumber: number;
+  boxIdx: number;
+  from: Position;
+  to: Position;
+  dir: Direction;
+  playerApproachPos: Position;
+}
+
+
 export interface UserProgress {
   currentChapter: number;
   currentLevel: number; // 1-100
