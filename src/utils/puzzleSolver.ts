@@ -27,10 +27,30 @@ export interface SolverResult {
   nextMove?: Direction;
 }
 
+export function isBoxDeadlocked(
+  box: Position,
+  width: number,
+  height: number,
+  grid: CellType[][],
+  plates: Position[],
+  fixedObstacles: Position[] = []
+): boolean {
+  // If box is on a target plate, it is productive and not deadlocked
+  if (plates.some(p => p.x === box.x && p.y === box.y)) return false;
+
+  const isWallOrSolid = (x: number, y: number) =>
+    x < 0 || x >= width || y < 0 || y >= height || grid[y][x] === 'WALL' || fixedObstacles.some(f => f.x === x && f.y === y);
+
+  const blockedH = isWallOrSolid(box.x - 1, box.y) || isWallOrSolid(box.x + 1, box.y);
+  const blockedV = isWallOrSolid(box.x, box.y - 1) || isWallOrSolid(box.x, box.y + 1);
+
+  return blockedH && blockedV;
+}
+
 /**
  * Fast Breadth-First Search solver for Droid Escape chamber puzzles.
- * Finds shortest sequence of moves for the droid to reach the Exit,
- * taking into account fixed immovable steel barriers and movable boxes.
+ * Finds shortest sequence of moves for the droid to activate all power sockets and clear the chamber.
+ * Incorporates intelligent deadlock pruning to solve complex Sokoban puzzles in milliseconds.
  */
 export function solvePuzzle(
   width: number,
@@ -43,10 +63,13 @@ export function solvePuzzle(
   laserPos?: Position,
   plates: Position[] = [],
   fixedObstacles: Position[] = [],
-  maxSearchStates = 25000
+  maxSearchStates = 40000
 ): SolverResult {
-  // If player is already on exit
-  if (initialPlayer.x === exitPos.x && initialPlayer.y === exitPos.y) {
+  // If all plates are already covered at start
+  const initialAllPlatesCovered =
+    plates.length > 0 &&
+    plates.every(pl => initialMovableBoxes.some(b => b.x === pl.x && b.y === pl.y));
+  if (initialAllPlatesCovered) {
     return { solvable: true, minMoves: 0, pushes: 0, solutionMoves: [] };
   }
 
@@ -68,10 +91,25 @@ export function solvePuzzle(
     statesCount++;
     const current = queue.shift()!;
 
-    // Check win condition: droid reached exit AND all target power sockets/plates are filled!
-    if (current.player.x === exitPos.x && current.player.y === exitPos.y) {
-      const allPlatesCovered = plates.length === 0 || plates.every(pl => current.boxes.some(b => b.x === pl.x && b.y === pl.y));
+    // Win condition check:
+    // 1. If plates exist: All plates must have boxes!
+    // 2. If plates are all filled, puzzle is cleared!
+    if (plates.length > 0) {
+      const allPlatesCovered = plates.every(pl =>
+        current.boxes.some(b => b.x === pl.x && b.y === pl.y)
+      );
       if (allPlatesCovered) {
+        return {
+          solvable: true,
+          minMoves: current.path.length,
+          pushes: current.pushes,
+          solutionMoves: current.path,
+          nextMove: current.path[0],
+        };
+      }
+    } else {
+      // If no plates, reaching exit is win condition
+      if (current.player.x === exitPos.x && current.player.y === exitPos.y) {
         return {
           solvable: true,
           minMoves: current.path.length,
@@ -85,9 +123,10 @@ export function solvePuzzle(
     // Determine if laser is currently blocking
     let laserActive = false;
     if (hasLaser && laserPos && plates.length > 0) {
-      const isAnyPlateCovered = plates.some(pl => 
-        current.boxes.some(b => b.x === pl.x && b.y === pl.y) ||
-        (current.player.x === pl.x && current.player.y === pl.y)
+      const isAnyPlateCovered = plates.some(
+        pl =>
+          current.boxes.some(b => b.x === pl.x && b.y === pl.y) ||
+          (current.player.x === pl.x && current.player.y === pl.y)
       );
       laserActive = !isAnyPlateCovered;
     }
@@ -102,10 +141,10 @@ export function solvePuzzle(
       // Wall check
       if (grid[ny][nx] === 'WALL') continue;
 
-      // Fixed immovable box check (acts like a solid barrier)
+      // Fixed immovable obstacle check
       if (fixedObstacles.some(f => f.x === nx && f.y === ny)) continue;
 
-      // Laser check
+      // Laser barrier check
       if (laserActive && laserPos && nx === laserPos.x && ny === laserPos.y) {
         continue;
       }
@@ -114,23 +153,22 @@ export function solvePuzzle(
       const boxIdx = current.boxes.findIndex(b => b.x === nx && b.y === ny);
 
       if (boxIdx !== -1) {
-        // Trying to push movable box
+        // Pushing movable box
         const pushX = nx + dx;
         const pushY = ny + dy;
 
-        // Can box go there?
+        // Can box go to push target?
         if (pushX < 0 || pushX >= width || pushY < 0 || pushY >= height) continue;
         if (grid[pushY][pushX] === 'WALL') continue;
-        // Cannot push into fixed box
         if (fixedObstacles.some(f => f.x === pushX && f.y === pushY)) continue;
-        // Box cannot be pushed onto the exit tile
-        if (pushX === exitPos.x && pushY === exitPos.y) continue;
-        // Box cannot be pushed onto active laser
         if (laserActive && laserPos && pushX === laserPos.x && pushY === laserPos.y) continue;
-        // Box cannot be pushed into another movable box
         if (current.boxes.some(b => b.x === pushX && b.y === pushY)) continue;
 
-        // Valid box push!
+        // Deadlock Pruning: If pushed into an unrecoverable corner (and not on a plate), prune!
+        if (isBoxDeadlocked({ x: pushX, y: pushY }, width, height, grid, plates, fixedObstacles)) {
+          continue;
+        }
+
         const newBoxes = current.boxes.map((b, i) => (i === boxIdx ? { x: pushX, y: pushY } : { ...b }));
         const newPlayer = { x: nx, y: ny };
         const key = stateKey(newPlayer, newBoxes);
@@ -145,7 +183,7 @@ export function solvePuzzle(
           });
         }
       } else {
-        // Simple player move into empty space
+        // Player walking onto empty tile
         const newPlayer = { x: nx, y: ny };
         const key = stateKey(newPlayer, current.boxes);
 
@@ -169,3 +207,4 @@ export function solvePuzzle(
     solutionMoves: [],
   };
 }
+

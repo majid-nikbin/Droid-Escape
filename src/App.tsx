@@ -11,7 +11,7 @@ import {
   MoveStep 
 } from './types/game';
 import { generateLevel, CHAPTERS } from './utils/levelGenerator';
-import { solvePuzzle } from './utils/puzzleSolver';
+import { solvePuzzle, isBoxDeadlocked } from './utils/puzzleSolver';
 import { sound } from './utils/audio';
 import { GameBoard, HintStep } from './components/GameBoard';
 import { DPadControls } from './components/DPadControls';
@@ -395,12 +395,21 @@ export default function App() {
         sound.playPlateClick();
       }
 
+      // Check if pushed box entered a corner deadlock
+      if (isBoxDeadlocked({ x: pushX, y: pushY }, levelData.width, levelData.height, levelData.grid, levelData.plates)) {
+        showToast('⚠️ بن‌بست! این هسته در گوشه قفل شد. دکمه بازگشت (Undo) را بزنید.', 'warning', 3000);
+      }
+
       // Check if all plates just became energized
-      const willAllCovered = levelData.plates.length === 0 || levelData.plates.every(pl =>
+      const willAllCovered = levelData.plates.length > 0 && levelData.plates.every(pl =>
         newBoxes.some(b => b.x === pl.x && b.y === pl.y)
       );
-      if (levelData.plates.length > 0 && willAllCovered && !allPlatesCovered) {
-        showToast('⚡ تمام هسته‌ها مستقر شدند! دریچه خروج باز شد!', 'success', 2500);
+
+      if (willAllCovered && !allPlatesCovered) {
+        showToast('⚡ تمام هسته‌ها مستقر شدند! اتاق با موفقیت پاکسازی شد!', 'success', 3000);
+        setTimeout(() => {
+          handleChamberVictory(movesCount + 1);
+        }, 500);
       }
 
       // Update total boxes pushed stats
@@ -472,20 +481,12 @@ export default function App() {
 
     if (dx === 0 && dy === 0) return;
 
-    // If directly adjacent: move 1 step directly into target
+    // If directly adjacent: move 1 step directly into target (or push adjacent box)
     if (Math.abs(dx) + Math.abs(dy) === 1) {
       if (dx === 1) handleMove('RIGHT');
       else if (dx === -1) handleMove('LEFT');
       else if (dy === 1) handleMove('DOWN');
       else if (dy === -1) handleMove('UP');
-      return;
-    }
-
-    // If tapped farther away: take 1 single discrete step in dominant direction
-    if (Math.abs(dx) >= Math.abs(dy)) {
-      handleMove(dx > 0 ? 'RIGHT' : 'LEFT');
-    } else {
-      handleMove(dy > 0 ? 'DOWN' : 'UP');
     }
   }, [isVictorious, hintSteps, playerPos, handleMove]);
 
@@ -830,11 +831,12 @@ export default function App() {
             </div>
           </div>
 
-          {/* Minimal Bottom Action Bar (Undo, Reset, Hint) */}
+          {/* Minimal Bottom Action Bar (Undo, Reset, Hint, 4-Way D-Pad) */}
           <DPadControls
             onUndo={handleUndo}
             onReset={handleResetLevel}
             onHint={handleHint}
+            onMove={handleMove}
             canUndo={moveHistory.length > 0 && !isVictorious}
             hintsRemaining={progress.helpsRemaining}
           />

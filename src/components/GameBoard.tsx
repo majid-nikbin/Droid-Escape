@@ -3,6 +3,7 @@ import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight, Sparkles, Lock, Check } from
 import { LevelData, Position, BoxItem, Direction } from '../types/game';
 import { AndroidMascot } from './AndroidMascot';
 import { CubeBox } from './CubeBox';
+import { isBoxDeadlocked } from '../utils/puzzleSolver';
 
 export interface HintStep {
   x: number;
@@ -234,11 +235,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           {/* Render 3D Cubic Boxes */}
           {boxes.map(box => {
             const isOnPlate = level.plates.some(pl => pl.x === box.x && pl.y === box.y);
+            const isDeadlocked = !isOnPlate && isBoxDeadlocked(box, level.width, level.height, level.grid, level.plates);
+
             return (
               <div
                 key={`box-${box.id}`}
                 onClick={() => handleCellClick(box.x, box.y)}
-                className="absolute transition-all duration-150 ease-out z-20 cursor-pointer"
+                className={`absolute transition-all duration-150 ease-out z-20 cursor-pointer ${
+                  isDeadlocked ? 'ring-2 ring-rose-500/80 rounded-xl shadow-[0_0_12px_rgba(244,63,94,0.6)] animate-pulse' : ''
+                }`}
                 style={{
                   width: `${100 / level.width}%`,
                   height: `${100 / level.height}%`,
@@ -251,6 +256,14 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   type={box.type}
                   isOnPlate={isOnPlate}
                 />
+                {isDeadlocked && (
+                  <div 
+                    title="Corner Deadlock! Box cannot be pushed in any direction. Use Undo."
+                    className="absolute -top-1.5 -right-1.5 px-1 py-0.2 rounded-full bg-rose-600 border border-white text-white flex items-center justify-center text-[8px] font-black shadow z-30 pointer-events-none"
+                  >
+                    بن‌بست!
+                  </div>
+                )}
               </div>
             );
           })}
