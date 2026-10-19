@@ -43,12 +43,23 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         </div>
       </div>
 
-      {/* Hero Mascot & Title Section */}
-      <div className="flex flex-col items-center my-6 text-center">
-        {/* Animated Android Droid Mascot Frame */}
-        <div className="relative w-36 h-36 mb-4 flex items-center justify-center">
-          <div className="absolute inset-0 bg-emerald-100/60 rounded-full blur-xl animate-pulse" />
-          <AndroidMascot direction="DOWN" isMoving={false} />
+      {/* Hero Logo Emblem & Title Section */}
+      <div className="flex flex-col items-center my-5 text-center">
+        {/* Geometric Isometric Hollow Cube Emblem (from uploaded image) */}
+        <div className="relative w-28 h-28 mb-3 flex items-center justify-center">
+          <div className="absolute inset-0 bg-amber-500/10 rounded-full blur-xl" />
+          <div className="w-24 h-24 p-2 bg-white rounded-3xl border border-slate-200/90 shadow-md flex items-center justify-center">
+            <svg viewBox="0 0 100 100" className="w-20 h-20 drop-shadow-sm">
+              <polygon points="36,49 50,57 50,73 36,65" fill="#f57c00" />
+              <polygon points="50,57 64,49 64,65 50,73" fill="#e65100" />
+              <polygon points="50,41 64,49 50,57 36,49" fill="#ffb300" />
+              <polygon points="64,36 64,49 50,57 50,44" fill="#50555e" />
+              <polygon points="36,36 50,44 50,57 36,49" fill="#383c44" />
+              <path d="M 50 12 L 88 34 L 50 54 L 12 34 Z M 50 21 L 36 36 L 50 44 L 64 36 Z" fill="#767c87" fillRule="evenodd" />
+              <path d="M 12 34 L 50 54 L 50 92 L 12 72 Z M 21 45 L 41 57 L 41 78 L 21 66 Z" fill="#50555e" fillRule="evenodd" />
+              <path d="M 50 54 L 88 34 L 88 72 L 50 92 Z M 59 57 L 79 45 L 79 66 L 59 78 Z" fill="#282a30" fillRule="evenodd" />
+            </svg>
+          </div>
         </div>
 
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 mb-1.5">
@@ -58,6 +69,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           Slide and push cubic cores onto target docks to unlock the exit gate across 2,000 puzzle chambers.
         </p>
       </div>
+
 
       {/* Main Action Buttons */}
       <div className="w-full flex flex-col gap-3 my-2">

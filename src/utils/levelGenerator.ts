@@ -135,7 +135,29 @@ function runReversePulls(
 ) {
   let boxes = initialPlates.map(p => ({ ...p }));
   let player = { ...initialPlayerPos };
+
+  // If initial player position cannot reach any legal pull, find a valid adjacent floor tile
+  let initialLegal = getLegalReversePulls(width, height, grid, player, boxes);
+  if (initialLegal.length === 0) {
+    for (const b of boxes) {
+      for (const d of DIRS) {
+        const candidateP = { x: b.x + d.dx, y: b.y + d.dy };
+        if (candidateP.x > 0 && candidateP.x < width - 1 && candidateP.y > 0 && candidateP.y < height - 1) {
+          if (grid[candidateP.y][candidateP.x] !== 'WALL' && !boxes.some(bx => bx.x === candidateP.x && bx.y === candidateP.y)) {
+            const testLegal = getLegalReversePulls(width, height, grid, candidateP, boxes);
+            if (testLegal.length > 0) {
+              player = candidateP;
+              break;
+            }
+          }
+        }
+      }
+      if (getLegalReversePulls(width, height, grid, player, boxes).length > 0) break;
+    }
+  }
+
   let lastMove: { boxIdx: number; dir: string } | null = null;
+  let successfulPulls = 0;
 
   for (let step = 0; step < targetPulls; step++) {
     const legal = getLegalReversePulls(width, height, grid, player, boxes);
@@ -166,10 +188,28 @@ function runReversePulls(
     boxes = boxes.map((b, i) => (i === chosen.boxIdx ? chosen.newBox : b));
     player = chosen.newPlayer;
     lastMove = { boxIdx: chosen.boxIdx, dir: chosen.dir };
+    successfulPulls++;
   }
 
-  return { boxes, player };
+  // Safety guarantee: If any box is still sitting directly on a target plate, nudge it away into an empty space
+  for (let i = 0; i < boxes.length; i++) {
+    if (boxes[i].x === initialPlates[i].x && boxes[i].y === initialPlates[i].y) {
+      for (const d of DIRS) {
+        const nx = boxes[i].x + d.dx;
+        const ny = boxes[i].y + d.dy;
+        if (nx > 0 && nx < width - 1 && ny > 0 && ny < height - 1) {
+          if (grid[ny][nx] !== 'WALL' && !boxes.some(b => b.x === nx && b.y === ny) && !initialPlates.some(p => p.x === nx && p.y === ny)) {
+            boxes[i] = { x: nx, y: ny };
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  return { boxes, player, successfulPulls };
 }
+
 
 /**
  * Procedurally generates challenging Sokoban puzzle chambers across 20 chapters (2000 levels):
@@ -221,40 +261,55 @@ export function generateLevel(chapter: number, level: number, isHardcore = false
       playerStart = { x: 2, y: 3 };
       exitPos = { x: 5, y: 1 };
       description = 'Cross Axis Docking: Maneuver past the reactor divider and dock both power units.';
-    } else if (archetype === 0 || archetype === 3) {
-      // Dual Chamber with Vertical Divider and 2 doorways
+    } else if (archetype === 0) {
+      // Dual Chamber with Vertical Divider and 2 doorways (37 moves, 11 pushes)
       walls = [
         { x: 4, y: 2 }, { x: 4, y: 3 }, { x: 4, y: 5 },
-        { x: 2, y: 3 }, { x: 6, y: 4 },
       ];
       plateCoords = [{ x: 5, y: 2 }, { x: 5, y: 5 }];
+      boxCoords = [{ x: 2, y: 3 }, { x: 2, y: 5 }];
+      playerStart = { x: 2, y: 2 };
       description = 'Dual Chamber Gateway: Shuttle both energy cores through narrow access doors to energize the right terminal.';
     } else if (archetype === 1) {
-      // Central Island Pillar with 4 Alcoves
+      // Central Island Pillar with 4 Alcoves (14 moves, 4 pushes)
       walls = [
         { x: 3, y: 3 }, { x: 4, y: 3 }, { x: 3, y: 4 }, { x: 4, y: 4 },
-        { x: 2, y: 2 }, { x: 5, y: 5 },
       ];
-      plateCoords = [{ x: 2, y: 4 }, { x: 5, y: 3 }];
+      plateCoords = [{ x: 2, y: 2 }, { x: 5, y: 5 }];
+      boxCoords = [{ x: 2, y: 4 }, { x: 5, y: 3 }];
+      playerStart = { x: 3, y: 2 };
       description = 'Central Core Orbit: Circumnavigate the reactor core. Steer cores into opposite alcoves without jamming.';
     } else if (archetype === 2) {
-      // T-Corridor Split
+      // T-Corridor Split (12 moves, 4 pushes)
       walls = [
         { x: 3, y: 2 }, { x: 4, y: 2 },
-        { x: 3, y: 4 }, { x: 4, y: 4 },
-        { x: 2, y: 3 },
+        { x: 4, y: 4 }, { x: 4, y: 5 },
       ];
-      plateCoords = [{ x: 5, y: 2 }, { x: 5, y: 5 }];
+      plateCoords = [{ x: 2, y: 3 }, { x: 5, y: 3 }];
+      boxCoords = [{ x: 2, y: 5 }, { x: 5, y: 5 }];
+      playerStart = { x: 3, y: 4 };
       description = 'T-Junction Switchback: Temporary parking is required. Park one core in the side bay before threading the other.';
-    } else {
-      // Horizontal Dividing Barrier with side gaps
+    } else if (archetype === 3) {
+      // Horizontal Dividing Barrier with flank corridors (23 moves, 12 pushes)
       walls = [
-        { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }, { x: 5, y: 4 },
-        { x: 3, y: 2 }, { x: 4, y: 5 },
+        { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 },
       ];
       plateCoords = [{ x: 2, y: 2 }, { x: 5, y: 2 }];
+      boxCoords = [{ x: 2, y: 5 }, { x: 5, y: 5 }];
+      playerStart = { x: 3, y: 6 };
       description = 'Transverse Conduit: Guide both cores from the lower loading dock across the flank channels.';
+    } else {
+      // Twin Pillar Conduit (19 moves, 7 pushes)
+      walls = [
+        { x: 3, y: 3 }, { x: 3, y: 4 },
+        { x: 5, y: 3 }, { x: 5, y: 4 },
+      ];
+      plateCoords = [{ x: 2, y: 3 }, { x: 6, y: 3 }];
+      boxCoords = [{ x: 4, y: 2 }, { x: 4, y: 5 }];
+      playerStart = { x: 4, y: 1 };
+      description = 'Twin Pillar Conduit: Maneuver cores through the central corridor and dock into flank berths.';
     }
+
 
     if (boxCoords.length === 0) {
       const grid = createEmptyGrid(width, height, walls);
@@ -262,6 +317,7 @@ export function generateLevel(chapter: number, level: number, isHardcore = false
       boxCoords = pulled.boxes;
       playerStart = pulled.player;
     }
+
 
   } else if (chapter <= 7) {
     // CHAPTERS 4-7: Tri-Chamber Labyrinths, S-Corridors & Laser Gates (2-3 Cores)

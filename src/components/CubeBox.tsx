@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, Zap, Check } from 'lucide-react';
+import { Lock, Check } from 'lucide-react';
 
 interface CubeBoxProps {
   id: number;
@@ -18,95 +18,106 @@ export const CubeBox: React.FC<CubeBoxProps> = ({
 
   return (
     <div
-      className={`relative w-full h-full flex items-center justify-center transition-transform duration-150 ${
-        isJustMoved ? 'scale-105' : 'scale-100 hover:scale-[1.02]'
+      className={`relative w-full h-full flex items-center justify-center select-none transition-transform duration-150 ${
+        isJustMoved ? 'scale-105' : 'scale-100 hover:scale-[1.03]'
       }`}
     >
-      {/* Soft Ground Ambient Shadow (Natural, no harsh neon blur) */}
+      {/* Soft Ground Ambient Shadow (Natural, eye-friendly) */}
       <div 
-        className={`absolute -bottom-1 w-[80%] h-2.5 rounded-full transition-all duration-200 ${
+        className={`absolute bottom-0 w-[78%] h-2.5 rounded-full transition-all duration-200 ${
           isOnPlate
-            ? 'bg-emerald-900/25 blur-[3px]'
-            : isEnergy
-            ? 'bg-amber-900/25 blur-[3px]'
-            : 'bg-slate-800/20 blur-[2px]'
+            ? 'bg-emerald-950/25 blur-[2.5px]'
+            : 'bg-slate-900/20 blur-[2px]'
         }`} 
       />
 
-      {/* 3D Tactile Cube Body with Beveled Isometric Depth */}
-      <div className="relative w-[88%] h-[88%] flex flex-col items-center justify-center">
-        <div
-          className={`relative w-full h-full rounded-2xl transition-all duration-200 flex flex-col justify-between p-1.5 shadow-md overflow-hidden ${
-            isFixed
-              ? 'bg-gradient-to-b from-slate-400 via-slate-500 to-slate-700 border-2 border-slate-300 shadow-slate-400/30'
-              : isOnPlate
-              ? 'bg-gradient-to-b from-emerald-400 via-emerald-500 to-emerald-600 border-2 border-emerald-200 shadow-emerald-700/25'
-              : isEnergy
-              ? 'bg-gradient-to-b from-amber-400 via-amber-500 to-amber-600 border-2 border-amber-200 shadow-amber-600/30'
-              : 'bg-gradient-to-b from-sky-400 via-blue-500 to-blue-600 border-2 border-sky-200 shadow-blue-600/25'
-          }`}
-          style={{
-            transform: 'perspective(400px) rotateX(6deg)',
-          }}
-        >
-          {/* Top Bevel Highlight (Clean warm specular sheen) */}
-          <div
-            className={`w-full h-2 rounded-t-xl transition-all ${
-              isFixed
-                ? 'bg-gradient-to-r from-slate-200/40 via-white/30 to-transparent'
-                : isOnPlate
-                ? 'bg-gradient-to-r from-emerald-100/60 via-white/40 to-transparent'
-                : isEnergy
-                ? 'bg-gradient-to-r from-amber-100/70 via-white/50 to-transparent'
-                : 'bg-gradient-to-r from-sky-100/60 via-white/40 to-transparent'
-            }`}
-          />
+      {/* Geometric Isometric Hollow Cube with Floating Glowing Core */}
+      <div className="relative w-[92%] h-[92%] flex items-center justify-center">
+        {isFixed ? (
+          /* Fixed Barrier: Solid Carved Granite/Steel Block */
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+            {/* Top Face */}
+            <polygon points="50,12 88,34 50,54 12,34" fill="#64748b" stroke="#94a3b8" strokeWidth="0.8" />
+            {/* Left Face */}
+            <polygon points="12,34 50,54 50,92 12,72" fill="#475569" stroke="#334155" strokeWidth="0.8" />
+            {/* Right Face */}
+            <polygon points="50,54 88,34 88,72 50,92" fill="#1e293b" stroke="#0f172a" strokeWidth="0.8" />
+            {/* Lock Emblem on Front Center */}
+            <circle cx="50" cy="54" r="10" fill="#0f172a" opacity="0.7" />
+            <path d="M 47 52 L 47 48 C 47 46 53 46 53 48 L 53 52 Z" fill="none" stroke="#e2e8f0" strokeWidth="1.5" />
+            <rect x="45" y="52" width="10" height="7" rx="1.5" fill="#f8fafc" />
+          </svg>
+        ) : (
+          /* Movable Core: Exact Isometric Hollow Slate Cube with Glowing Amber (or Docked Emerald) Core */
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-md">
+            {/* --- 1. Inner Core (Visible through the hollow windows) --- */}
+            {/* Left face of inner core */}
+            <polygon
+              points="36,49 50,57 50,73 36,65"
+              fill={isOnPlate ? '#10b981' : isEnergy ? '#fb8c00' : '#f57c00'}
+            />
+            {/* Right face of inner core */}
+            <polygon
+              points="50,57 64,49 64,65 50,73"
+              fill={isOnPlate ? '#047857' : isEnergy ? '#d97706' : '#ea580c'}
+            />
+            {/* Top face of inner core */}
+            <polygon
+              points="50,41 64,49 50,57 36,49"
+              fill={isOnPlate ? '#6ee7b7' : isEnergy ? '#fcd34d' : '#ffb300'}
+            />
 
-          {/* Corner Structural Inset Brackets */}
-          <div className="absolute top-1 left-1 w-2 h-2 border-t-2 border-l-2 border-white/40 rounded-tl pointer-events-none" />
-          <div className="absolute top-1 right-1 w-2 h-2 border-t-2 border-r-2 border-white/40 rounded-tr pointer-events-none" />
-          <div className="absolute bottom-1 left-1 w-2 h-2 border-b-2 border-l-2 border-black/15 rounded-bl pointer-events-none" />
-          <div className="absolute bottom-1 right-1 w-2 h-2 border-b-2 border-r-2 border-black/15 rounded-br pointer-events-none" />
+            {/* --- 2. Inner Window Thickness Jambs (Depth Reveals) --- */}
+            {/* Top window right jamb */}
+            <polygon points="64,36 64,49 50,57 50,44" fill="#50555e" opacity="0.95" />
+            {/* Top window left jamb */}
+            <polygon points="36,36 50,44 50,57 36,49" fill="#383c44" opacity="0.95" />
 
-          {/* Core Visual Glyphs */}
-          {isFixed ? (
-            /* Fixed Granite / Steel Obstacle */
-            <div className="flex-1 flex flex-col items-center justify-center gap-0.5">
-              <div className="w-5 h-5 rounded-lg bg-slate-600 border border-slate-400 flex items-center justify-center shadow-inner">
-                <Lock className="w-3 h-3 text-white" />
-              </div>
-              <div className="w-8 h-1 rounded bg-slate-700/80 flex items-center justify-around overflow-hidden px-0.5">
-                <div className="w-1 h-2 bg-amber-300 -rotate-12" />
-                <div className="w-1 h-2 bg-slate-600 -rotate-12" />
-                <div className="w-1 h-2 bg-amber-300 -rotate-12" />
-              </div>
-            </div>
-          ) : (
-            /* Movable Power Core */
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <div 
-                className={`w-6 h-6 rounded-lg flex items-center justify-center shadow-inner transition-all ${
-                  isOnPlate
-                    ? 'bg-emerald-300/40 border border-emerald-100 text-white'
-                    : isEnergy
-                    ? 'bg-amber-300/40 border border-amber-100 text-amber-900'
-                    : 'bg-white/30 border border-white/40 text-white'
-                }`}
-              >
-                {isOnPlate ? (
-                  <Check className="w-4 h-4 text-white stroke-[3.5]" />
-                ) : isEnergy ? (
-                  <Zap className="w-4 h-4 text-amber-950 fill-amber-300 stroke-[2.5]" />
-                ) : (
-                  <div className="w-2.5 h-2.5 rounded-sm bg-white" />
-                )}
-              </div>
-            </div>
-          )}
+            {/* Left window top jamb */}
+            <polygon points="21,45 34,53 34,57 21,49" fill="#787e88" />
+            {/* Left window right jamb */}
+            <polygon points="44,58 44,74 50,70 50,63" fill="#2b2d33" opacity="0.85" />
 
-          {/* Subtle Bottom Bevel Rim */}
-          <div className="w-full h-1 bg-black/15 rounded-b-xl" />
-        </div>
+            {/* Right window top jamb */}
+            <polygon points="56,58 69,50 69,54 56,62" fill="#50555e" />
+            {/* Right window left jamb */}
+            <polygon points="56,58 56,74 50,70 50,63" fill="#787e88" opacity="0.85" />
+
+            {/* --- 3. Outer Slate-Grey Geometric Faces (with window cutouts) --- */}
+            {/* Top Face (#767c87) */}
+            <path
+              d="M 50 12 L 88 34 L 50 54 L 12 34 Z M 50 21 L 36 36 L 50 44 L 64 36 Z"
+              fill="#767c87"
+              fillRule="evenodd"
+            />
+
+            {/* Left Face (#50555e) */}
+            <path
+              d="M 12 34 L 50 54 L 50 92 L 12 72 Z M 21 45 L 41 57 L 41 78 L 21 66 Z"
+              fill="#50555e"
+              fillRule="evenodd"
+            />
+
+            {/* Right Face (#282a30) */}
+            <path
+              d="M 50 54 L 88 34 L 88 72 L 50 92 Z M 59 57 L 79 45 L 79 66 L 59 78 Z"
+              fill="#282a30"
+              fillRule="evenodd"
+            />
+
+            {/* Subtle Edge Highlight Line along Top Ridge */}
+            <line x1="50" y1="12" x2="88" y2="34" stroke="#9ba2ad" strokeWidth="0.8" opacity="0.7" />
+            <line x1="50" y1="12" x2="12" y2="34" stroke="#9ba2ad" strokeWidth="0.8" opacity="0.7" />
+
+            {/* Docked Status Checkmark Indicator (Small, crisp on top corner) */}
+            {isOnPlate && (
+              <g transform="translate(42, 45)">
+                <circle cx="8" cy="8" r="6" fill="#10b981" />
+                <path d="M 5 8 L 7.5 10.5 L 11 6" fill="none" stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </g>
+            )}
+          </svg>
+        )}
       </div>
     </div>
   );
