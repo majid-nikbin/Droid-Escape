@@ -197,6 +197,10 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 <div
                   key={`cell-${x}-${y}`}
                   onClick={() => handleCellClick(x, y)}
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    if (onAutoWalk) onAutoWalk(x, y);
+                  }}
                   className={`relative rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                     isWall
                       ? 'bg-gradient-to-b from-slate-600 via-slate-700 to-slate-800 border-t-2 border-l-2 border-slate-400 border-r-2 border-b-2 border-slate-900 shadow-[0_3px_0_#334155] z-10'

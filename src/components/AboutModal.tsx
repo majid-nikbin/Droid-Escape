@@ -1,5 +1,20 @@
 import React, { useState } from 'react';
-import { X, Info, Code, Mail, Sparkles, RefreshCw, CheckCircle2, KeyRound, ExternalLink, ShieldCheck } from 'lucide-react';
+import { 
+  X, 
+  Info, 
+  Code, 
+  Mail, 
+  RefreshCw, 
+  CheckCircle2, 
+  KeyRound, 
+  ExternalLink, 
+  ShieldCheck, 
+  Github, 
+  Layers, 
+  Cpu, 
+  Volume2, 
+  Compass 
+} from 'lucide-react';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -86,8 +101,8 @@ export const AboutModal: React.FC<AboutModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 p-6 shadow-2xl flex flex-col gap-4 text-slate-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-sm rounded-3xl bg-white border border-slate-200 p-5 sm:p-6 shadow-2xl flex flex-col gap-3.5 text-slate-800 my-auto max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2 text-emerald-700 font-bold text-lg">
@@ -103,10 +118,10 @@ export const AboutModal: React.FC<AboutModalProps> = ({
         </div>
 
         {/* Geometric Emblem & Title */}
-        <div className="flex flex-col items-center my-1 text-center">
-          <div className="w-20 h-20 rounded-3xl bg-slate-50 border-2 border-slate-200 p-2 shadow-sm mb-2 flex items-center justify-center">
-            {/* Geometric Isometric Hollow Cube */}
-            <svg viewBox="0 0 100 100" className="w-16 h-16 drop-shadow">
+        <div className="flex flex-col items-center my-0.5 text-center">
+          <div className="w-18 h-18 rounded-3xl bg-slate-900 border-2 border-slate-700 p-2 shadow-md mb-2 flex items-center justify-center">
+            {/* Geometric Isometric Hollow Cube with Radiant Amber Core */}
+            <svg viewBox="0 0 100 100" className="w-14 h-14 drop-shadow">
               <polygon points="36,49 50,57 50,73 36,65" fill="#f57c00" />
               <polygon points="50,57 64,49 64,65 50,73" fill="#e65100" />
               <polygon points="50,41 64,49 50,57 36,49" fill="#ffb300" />
@@ -118,22 +133,23 @@ export const AboutModal: React.FC<AboutModalProps> = ({
             </svg>
           </div>
           <h2 className="text-xl font-black tracking-wide text-slate-900">DROID ESCAPE</h2>
-          <span className="text-xs text-slate-500">20 Chapters · 2,000 Brain Puzzles</span>
+          <span className="text-xs text-slate-500 font-medium">20 Chapters · 2,000 Brain Puzzles</span>
         </div>
 
-        {/* Info Cards */}
-        <div className="flex flex-col gap-2.5">
+        {/* Developer & Contact Section */}
+        <div className="flex flex-col gap-2">
           {/* Developer Card (Silent 5 Clicks to open Secret Unlock) */}
           <div
             onClick={handleDeveloperClick}
-            className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all cursor-pointer flex items-center justify-between select-none active:scale-[0.98]"
+            className="p-3 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all cursor-pointer flex items-center justify-between select-none active:scale-[0.98]"
+            title="Tap 5 times for Developer Passcode"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
-                <Code className="w-5 h-5" />
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700">
+                <Code className="w-4 h-4" />
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
+                <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
                   Developer
                 </span>
                 <span className="text-sm font-bold text-slate-900">Majid Nikbin</span>
@@ -149,93 +165,149 @@ export const AboutModal: React.FC<AboutModalProps> = ({
           {/* Email Support */}
           <a
             href="mailto:majid.nikbin@gmail.com"
-            className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-between text-left group cursor-pointer"
+            className="p-3 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-between text-left group cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-700">
-                <Mail className="w-5 h-5" />
+              <div className="w-8 h-8 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-700">
+                <Mail className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
+                <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
                   Contact & Feedback
                 </span>
-                <span className="text-xs font-mono text-slate-800">majid.nikbin@gmail.com</span>
+                <span className="text-xs font-mono text-slate-800 font-semibold">majid.nikbin@gmail.com</span>
               </div>
             </div>
-            <ExternalLink className="w-4 h-4 text-slate-400 group-hover:text-slate-800 transition-colors" />
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-800 transition-colors" />
           </a>
 
-          {/* Version & Update Check */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          {/* GitHub Repository */}
+          <a
+            href="https://github.com/majid-nikbin/Droid-Escape"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-3 rounded-2xl bg-slate-50 border border-slate-200 hover:border-slate-300 transition-all flex items-center justify-between text-left group cursor-pointer"
+          >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
-                <ShieldCheck className="w-5 h-5" />
+              <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-800">
+                <Github className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">
-                  Version
+                <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                  Source Code & Releases
                 </span>
-                <span className="text-xs font-bold text-slate-900">v{currentVersion}</span>
+                <span className="text-xs font-mono text-slate-800 font-semibold">github.com/majid-nikbin/Droid-Escape</span>
               </div>
             </div>
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-800 transition-colors" />
+          </a>
+        </div>
 
-            <button
-              onClick={handleCheckUpdate}
-              disabled={isCheckingUpdate}
-              className="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs text-slate-700 font-medium flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdate ? 'animate-spin' : ''}`} />
-              <span>{isCheckingUpdate ? 'Checking...' : 'Check'}</span>
-            </button>
+        {/* Specifications Section */}
+        <div className="rounded-2xl bg-slate-50 border border-slate-200 p-3 flex flex-col gap-2">
+          <div className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1 flex items-center gap-1.5">
+            <Cpu className="w-3.5 h-3.5 text-slate-500" />
+            <span>Specifications & Engine</span>
           </div>
 
-          {updateMessage && (
-            <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs text-center flex items-center justify-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>{updateMessage}</span>
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <div className="flex flex-col">
+              <span className="text-slate-400 font-semibold">Runtime / Framework</span>
+              <span className="font-bold text-slate-800">React 18 · Vite · TS</span>
             </div>
-          )}
-
-          {/* Secret Passcode Prompt */}
-          {showSecretPrompt && (
-            <form onSubmit={handleVerifySecret} className="mt-2 p-3 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col gap-2">
-              <div className="flex items-center justify-between text-xs font-bold text-amber-900">
-                <span className="flex items-center gap-1">
-                  <KeyRound className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Developer Passcode</span>
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setShowSecretPrompt(false)}
-                  className="text-amber-700 hover:text-amber-900"
-                >
-                  ✕
-                </button>
-              </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="password"
-                  placeholder="Enter code"
-                  value={secretCode}
-                  onChange={e => setSecretCode(e.target.value)}
-                  className="flex-1 px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-slate-900 text-xs font-mono outline-hidden focus:border-amber-500"
-                  autoFocus
-                />
-                <button
-                  type="submit"
-                  className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs cursor-pointer shadow-xs"
-                >
-                  Unlock
-                </button>
-              </div>
-              {secretError && (
-                <span className="text-[11px] text-rose-600 font-medium">
-                  Invalid Passcode. Try again.
-                </span>
-              )}
-            </form>
-          )}
+            <div className="flex flex-col">
+              <span className="text-slate-400 font-semibold">Native Engine</span>
+              <span className="font-bold text-slate-800">Capacitor Android</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-slate-400 font-semibold">Audio Engine</span>
+              <span className="font-bold text-slate-800">8-Bit Web Audio API</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-slate-400 font-semibold">Puzzle Solver</span>
+              <span className="font-bold text-slate-800">BFS Optimal Pathing</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-slate-400 font-semibold">Content Scale</span>
+              <span className="font-bold text-slate-800">20 Chapters · 2000 Lvls</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-slate-400 font-semibold">Color Palette</span>
+              <span className="font-bold text-slate-800">Slate & Warm Amber</span>
+            </div>
+          </div>
         </div>
+
+        {/* Version & Update Check */}
+        <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
+                Version
+              </span>
+              <span className="text-xs font-bold text-slate-900">v{currentVersion}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleCheckUpdate}
+            disabled={isCheckingUpdate}
+            className="px-2.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs text-slate-700 font-medium flex items-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 cursor-pointer shadow-xs"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isCheckingUpdate ? 'animate-spin' : ''}`} />
+            <span>{isCheckingUpdate ? 'Checking...' : 'Check'}</span>
+          </button>
+        </div>
+
+        {updateMessage && (
+          <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs text-center flex items-center justify-center gap-1.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{updateMessage}</span>
+          </div>
+        )}
+
+        {/* Secret Passcode Prompt */}
+        {showSecretPrompt && (
+          <form onSubmit={handleVerifySecret} className="mt-1 p-3 rounded-2xl bg-amber-50 border border-amber-200 flex flex-col gap-2">
+            <div className="flex items-center justify-between text-xs font-bold text-amber-900">
+              <span className="flex items-center gap-1">
+                <KeyRound className="w-3.5 h-3.5 text-amber-700" />
+                <span>Developer Passcode</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowSecretPrompt(false)}
+                className="text-amber-700 hover:text-amber-900"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="password"
+                placeholder="Enter 2450"
+                value={secretCode}
+                onChange={e => setSecretCode(e.target.value)}
+                className="flex-1 px-3 py-1.5 rounded-xl bg-white border border-amber-300 text-slate-900 text-xs font-mono outline-hidden focus:border-amber-500"
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs cursor-pointer shadow-xs"
+              >
+                Unlock
+              </button>
+            </div>
+            {secretError && (
+              <span className="text-[11px] text-rose-600 font-medium">
+                Invalid Passcode. Enter 2450.
+              </span>
+            )}
+          </form>
+        )}
       </div>
     </div>
   );

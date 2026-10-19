@@ -41,9 +41,9 @@ export const TopBar: React.FC<TopBarProps> = ({
       <div className="flex items-center gap-2.5">
         <button
           onClick={onBack}
-          aria-label="Previous Level / Back"
-          className="p-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-200 active:scale-95 transition-all flex items-center justify-center shadow-xs"
-          title="Previous Level (Go back one chamber)"
+          aria-label="Back to Main Menu"
+          className="p-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-200 active:scale-95 transition-all flex items-center justify-center shadow-xs cursor-pointer"
+          title="Back to Main Menu"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>

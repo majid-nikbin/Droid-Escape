@@ -249,21 +249,28 @@ export default function App() {
       return;
     }
 
-    if (screen === 'CHAPTER_SELECT' || screen === 'SHOP' || screen === 'SETTINGS') {
-      setScreen(levelData ? 'PLAYING' : 'MAIN_MENU');
+    if (screen === 'CHAPTER_SELECT') {
+      setScreen('MAIN_MENU');
+      return;
+    }
+
+    if (screen === 'SHOP' || screen === 'SETTINGS') {
+      setScreen('MAIN_MENU');
       return;
     }
 
     if (screen === 'PLAYING') {
-      if (levelData.level > 1) {
-        loadChamber(levelData.chapter, levelData.level - 1);
-        showToast(`Chamber ${levelData.level - 1}`, 'info', 1000);
-      } else if (levelData.chapter > 1) {
-        loadChamber(levelData.chapter - 1, 100);
-        showToast(`Chapter ${levelData.chapter - 1} · Chamber 100`, 'info', 1000);
-      } else {
-        setScreen('MAIN_MENU');
+      if (solutionTimerRef.current) {
+        clearInterval(solutionTimerRef.current);
+        solutionTimerRef.current = null;
+        setIsSolutionAutoPlaying(false);
       }
+      if (autoWalkTimerRef.current) {
+        clearInterval(autoWalkTimerRef.current);
+        autoWalkTimerRef.current = null;
+        setAutoWalkTarget(null);
+      }
+      setScreen('MAIN_MENU');
       return;
     }
 
@@ -566,15 +573,49 @@ export default function App() {
       autoWalkTimerRef.current = null;
     }
 
+    let targetX = destX;
+    let targetY = destY;
+
     if (destX < 0 || destX >= levelData.width || destY < 0 || destY >= levelData.height) return;
     if (levelData.grid[destY]?.[destX] === 'WALL') return;
-    if (boxesRef.current.some(b => b.x === destX && b.y === destY)) return;
-    if (laserActive && levelData.laserPos && destX === levelData.laserPos.x && destY === levelData.laserPos.y) return;
+
+    // If tapped on a box: find the best adjacent walkable space around it
+    const isTargetBox = boxesRef.current.some(b => b.x === destX && b.y === destY);
+    const candidateTargets: Position[] = [];
+
+    if (isTargetBox) {
+      const adj = [
+        { x: destX, y: destY - 1 },
+        { x: destX, y: destY + 1 },
+        { x: destX - 1, y: destY },
+        { x: destX + 1, y: destY },
+      ];
+      for (const p of adj) {
+        if (
+          p.x >= 0 && p.x < levelData.width &&
+          p.y >= 0 && p.y < levelData.height &&
+          levelData.grid[p.y][p.x] !== 'WALL' &&
+          !boxesRef.current.some(b => b.x === p.x && b.y === p.y) &&
+          !(laserActive && levelData.laserPos && p.x === levelData.laserPos.x && p.y === levelData.laserPos.y)
+        ) {
+          candidateTargets.push(p);
+        }
+      }
+
+      if (candidateTargets.length === 0) {
+        sound.playBump();
+        showToast('No accessible position beside this core.', 'warning', 1500);
+        return;
+      }
+    } else {
+      if (laserActive && levelData.laserPos && destX === levelData.laserPos.x && destY === levelData.laserPos.y) return;
+      candidateTargets.push({ x: destX, y: destY });
+    }
 
     const startPos = playerPosRef.current;
-    if (startPos.x === destX && startPos.y === destY) return;
+    if (!isTargetBox && startPos.x === destX && startPos.y === destY) return;
 
-    // BFS to find path through empty spaces and plates
+    // BFS to find shortest path through walkable tiles
     const DIRS_MAP: { dir: Direction; dx: number; dy: number }[] = [
       { dir: 'UP', dx: 0, dy: -1 },
       { dir: 'DOWN', dx: 0, dy: 1 },
@@ -589,10 +630,13 @@ export default function App() {
     visited.add(`${startPos.x},${startPos.y}`);
 
     let foundPath: Direction[] | null = null;
+    let finalDest: Position | null = null;
+
     while (queue.length > 0) {
       const cur = queue.shift()!;
-      if (cur.pos.x === destX && cur.pos.y === destY) {
+      if (candidateTargets.some(t => t.x === cur.pos.x && t.y === cur.pos.y)) {
         foundPath = cur.path;
+        finalDest = cur.pos;
         break;
       }
 
@@ -614,13 +658,13 @@ export default function App() {
 
     if (!foundPath || foundPath.length === 0) {
       sound.playBump();
-      showToast('Path to destination is blocked.', 'warning', 1500);
+      showToast('Path is blocked.', 'warning', 1200);
       return;
     }
 
-    setAutoWalkTarget({ x: destX, y: destY });
+    setAutoWalkTarget(finalDest);
 
-    // Step sequentially along the path
+    // Step smoothly and briskly along the path
     let stepIndex = 0;
     autoWalkTimerRef.current = setInterval(() => {
       if (stepIndex >= foundPath!.length || isVictoriousRef.current) {
@@ -635,7 +679,7 @@ export default function App() {
       const dir = foundPath![stepIndex];
       handleMove(dir);
       stepIndex++;
-    }, 70);
+    }, 60);
   }, [levelData, laserActive, handleMove, showToast]);
 
   // Undo Last Move

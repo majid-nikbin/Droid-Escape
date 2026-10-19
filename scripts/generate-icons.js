@@ -2,92 +2,126 @@ import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
 
+// High-Fidelity Geometric Isometric Hollow Cube with Radiant Amber Core
 const svgIcon = `
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Background Gradient -->
-    <radialGradient id="bgRadial" cx="50%" cy="45%" r="65%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="60%" stop-color="#020617" />
-      <stop offset="100%" stop-color="#000208" />
+    <!-- Background Ambient Radial Light -->
+    <radialGradient id="bgGlow" cx="50%" cy="48%" r="60%">
+      <stop offset="0%" stop-color="#2a3344" />
+      <stop offset="70%" stop-color="#141a24" />
+      <stop offset="100%" stop-color="#0b0f17" />
     </radialGradient>
 
-    <!-- Emerald Android Gradient -->
-    <linearGradient id="droidHeadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34d399" />
-      <stop offset="50%" stop-color="#10b981" />
-      <stop offset="100%" stop-color="#047857" />
+    <!-- Inner Core Warmth Ambient -->
+    <radialGradient id="amberCoreGlow" cx="50%" cy="52%" r="40%">
+      <stop offset="0%" stop-color="#ffb300" stop-opacity="0.3" />
+      <stop offset="50%" stop-color="#ea580c" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#ea580c" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Linear Gradients for Outer Slate Faces -->
+    <linearGradient id="slateTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8a929e" />
+      <stop offset="100%" stop-color="#6e7480" />
     </linearGradient>
 
-    <!-- Neon Cyan Cube Top -->
-    <linearGradient id="cubeTop" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#0284c7" />
+    <linearGradient id="slateLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#585d68" />
+      <stop offset="100%" stop-color="#42464f" />
     </linearGradient>
 
-    <!-- Neon Cyan Cube Left Face -->
-    <linearGradient id="cubeLeft" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0284c7" />
-      <stop offset="100%" stop-color="#0369a1" />
+    <linearGradient id="slateRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#31343c" />
+      <stop offset="100%" stop-color="#1f2127" />
     </linearGradient>
 
-    <!-- Neon Cyan Cube Right Face -->
-    <linearGradient id="cubeRight" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0369a1" />
-      <stop offset="100%" stop-color="#075985" />
+    <!-- Linear Gradients for Inner Amber Cube -->
+    <linearGradient id="amberTop" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffca28" />
+      <stop offset="100%" stop-color="#ffa000" />
     </linearGradient>
 
-    <!-- Glow Filter -->
-    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="8" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    <linearGradient id="amberLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9800" />
+      <stop offset="100%" stop-color="#f57c00" />
+    </linearGradient>
+
+    <linearGradient id="amberRight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e65100" />
+      <stop offset="100%" stop-color="#bf360c" />
+    </linearGradient>
+
+    <!-- Soft Floor Shadow Filter -->
+    <filter id="floorShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" />
     </filter>
   </defs>
 
   <!-- Squircle Base for App Icon -->
-  <rect width="512" height="512" rx="112" fill="url(#bgRadial)" stroke="#1e293b" stroke-width="4" />
+  <rect width="512" height="512" rx="112" fill="url(#bgGlow)" stroke="#2d3748" stroke-width="3" />
 
-  <!-- Outer Sci-Fi Frame Ring -->
-  <circle cx="256" cy="256" r="236" fill="none" stroke="#10b981" stroke-width="2" stroke-opacity="0.25" stroke-dasharray="12 8" />
-  <circle cx="256" cy="256" r="218" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-opacity="0.2" />
+  <!-- Inner Ambient Core Glow Reflection on background -->
+  <circle cx="256" cy="275" r="170" fill="url(#amberCoreGlow)" />
 
-  <!-- Cast Shadow Under Cube -->
-  <ellipse cx="256" cy="420" rx="160" ry="32" fill="#000000" opacity="0.6" filter="blur(10px)" />
+  <!-- Soft Isometric Floor Drop Shadow -->
+  <ellipse cx="256" cy="452" rx="160" ry="32" fill="#000000" opacity="0.65" filter="url(#floorShadow)" />
 
-  <!-- 3D Isometric Puzzle Cube -->
-  <g transform="translate(0, 30)">
+  <!-- === THE GEOMETRIC HOLLOW CUBE (FROM USER PHOTO) === -->
+  <g transform="translate(0, 0)">
+    <!-- 1. INNER VIBRANT AMBER CUBE (Visible through windows) -->
     <!-- Top Face -->
-    <polygon points="256,220 390,285 256,350 122,285" fill="url(#cubeTop)" stroke="#67e8f9" stroke-width="3" />
+    <polygon points="256,196 328,238 256,280 184,238" fill="url(#amberTop)" stroke="#ffe082" stroke-width="0.8" />
     <!-- Left Face -->
-    <polygon points="122,285 256,350 256,410 122,345" fill="url(#cubeLeft)" stroke="#0284c7" stroke-width="1.5" />
+    <polygon points="184,238 256,280 256,366 184,324" fill="url(#amberLeft)" />
     <!-- Right Face -->
-    <polygon points="256,350 390,285 390,345 256,410" fill="url(#cubeRight)" stroke="#0369a1" stroke-width="1.5" />
-    
-    <!-- Cube Core Circuit Emblem -->
-    <polygon points="256,260 290,277 256,295 222,277" fill="#67e8f9" opacity="0.9" filter="url(#neonGlow)" />
-  </g>
+    <polygon points="256,280 328,238 328,324 256,366" fill="url(#amberRight)" />
 
-  <!-- Android Droid Mascot (Emerging Heroically) -->
-  <g transform="translate(0, -10)">
-    <!-- Antennas with Neon Glow Tips -->
-    <line x1="210" y1="130" x2="168" y2="70" stroke="#34d399" stroke-width="14" stroke-linecap="round" />
-    <circle cx="168" cy="70" r="10" fill="#a7f3d0" filter="url(#neonGlow)" />
+    <!-- 2. WINDOW THICKNESS JAMBS / REVEALS (Physical Depth) -->
+    <!-- Top Window Jambs -->
+    <polygon points="334,178 334,238 256,280 256,220" fill="#4d525c" opacity="0.95" />
+    <polygon points="178,178 256,220 256,280 184,238" fill="#363940" opacity="0.95" />
 
-    <line x1="302" y1="130" x2="344" y2="70" stroke="#34d399" stroke-width="14" stroke-linecap="round" />
-    <circle cx="344" cy="70" r="10" fill="#a7f3d0" filter="url(#neonGlow)" />
+    <!-- Left Window Jambs -->
+    <polygon points="126,226 200,268 200,286 126,244" fill="#757a85" />
+    <polygon points="222,280 222,364 256,344 256,306" fill="#24262b" opacity="0.9" />
 
-    <!-- Droid Dome Head -->
-    <path d="M146,200 C146,139.2 195.2,90 256,90 C316.8,90 366,139.2 366,200 Z" fill="url(#droidHeadGrad)" stroke="#6ee7b7" stroke-width="3" />
+    <!-- Right Window Jambs -->
+    <polygon points="290,280 364,238 364,256 290,298" fill="#4d525c" />
+    <polygon points="290,280 290,364 256,344 256,306" fill="#757a85" opacity="0.9" />
 
-    <!-- Tech Collar Trim -->
-    <rect x="146" y="200" width="220" height="12" rx="6" fill="#065f46" />
+    <!-- 3. OUTER METALLIC SLATE FRAME FACES (Cutouts for Windows) -->
+    <!-- Top Face (Slate Top with cutout) -->
+    <path
+      d="M 256 74 L 436 178 L 256 282 L 76 178 Z M 256 126 L 178 178 L 256 220 L 334 178 Z"
+      fill="url(#slateTop)"
+      fill-rule="evenodd"
+      stroke="#9ba2ad"
+      stroke-width="1.2"
+    />
 
-    <!-- Expressive Eyes (Glowing White/Cyan) -->
-    <circle cx="202" cy="155" r="14" fill="#ffffff" filter="url(#neonGlow)" />
-    <circle cx="202" cy="155" r="6" fill="#67e8f9" />
+    <!-- Left Face (Slate Left with cutout) -->
+    <path
+      d="M 76 178 L 256 282 L 256 444 L 76 340 Z M 126 226 L 222 280 L 222 384 L 126 330 Z"
+      fill="url(#slateLeft)"
+      fill-rule="evenodd"
+      stroke="#5a606c"
+      stroke-width="1.2"
+    />
 
-    <circle cx="310" cy="155" r="14" fill="#ffffff" filter="url(#neonGlow)" />
-    <circle cx="310" cy="155" r="6" fill="#67e8f9" />
+    <!-- Right Face (Slate Right with cutout) -->
+    <path
+      d="M 256 282 L 436 178 L 436 340 L 256 444 Z M 290 280 L 386 226 L 386 330 L 290 384 Z"
+      fill="url(#slateRight)"
+      fill-rule="evenodd"
+      stroke="#363942"
+      stroke-width="1.2"
+    />
+
+    <!-- Crisp Outer Ridge Highlights -->
+    <line x1="256" y1="74" x2="436" y2="178" stroke="#cbd5e1" stroke-width="1.6" opacity="0.75" />
+    <line x1="256" y1="74" x2="76" y2="178" stroke="#cbd5e1" stroke-width="1.6" opacity="0.75" />
+    <line x1="256" y1="282" x2="256" y2="444" stroke="#64748b" stroke-width="1" opacity="0.6" />
   </g>
 </svg>
 `;
@@ -95,8 +129,8 @@ const svgIcon = `
 async function main() {
   const svgBuffer = Buffer.from(svgIcon);
 
-  // 1. Write public SVG
-  fs.writeFileSync('public/favicon.svg', svgIcon);
+  // 1. Write public SVG (Favicon)
+  fs.writeFileSync('public/favicon.svg', svgIcon.trim());
   console.log('Created public/favicon.svg');
 
   // 2. High-res app icon 512x512
@@ -148,7 +182,7 @@ async function main() {
     console.log('Generated Android splash.png');
   }
 
-  console.log('All icons successfully generated!');
+  console.log('All icons successfully generated from exact cube image!');
 }
 
 main().catch(err => {
