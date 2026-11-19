@@ -13,7 +13,7 @@ import {
   SolutionPushStep 
 } from './types/game';
 import { generateLevel, CHAPTERS } from './utils/levelGenerator';
-import { solvePuzzle, isBoxDeadlocked } from './utils/puzzleSolver';
+import { solvePuzzle, isBoxDeadlocked, findWalkPath } from './utils/puzzleSolver';
 import { sound } from './utils/audio';
 import { GameBoard, HintStep } from './components/GameBoard';
 import { DPadControls } from './components/DPadControls';
@@ -56,6 +56,7 @@ const INITIAL_SOUND: SoundSettings = {
 export default function App() {
   // Screen routing state
   const [screen, setScreen] = useState<ScreenState>('MAIN_MENU');
+  const [returnScreen, setReturnScreen] = useState<'MAIN_MENU' | 'PLAYING'>('MAIN_MENU');
   const [selectedChapterForLevels, setSelectedChapterForLevels] = useState<number>(1);
   const [isAboutOpen, setIsAboutOpen] = useState<boolean>(false);
 
@@ -117,6 +118,11 @@ export default function App() {
   const boxesRef = useRef<BoxItem[]>(boxes);
   const movesCountRef = useRef<number>(movesCount);
   const isVictoriousRef = useRef<boolean>(isVictorious);
+  const fullSolutionMovesRef = useRef<Direction[]>([]);
+  const solutionPushesRef = useRef<SolutionPushStep[]>([]);
+  const activePushIndexRef = useRef<number>(0);
+  const solutionStepIdxRef = useRef<number>(0);
+  const unlockedHintKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     playerPosRef.current = playerPos;
@@ -190,6 +196,11 @@ export default function App() {
       clearInterval(autoWalkTimerRef.current);
       autoWalkTimerRef.current = null;
     }
+    fullSolutionMovesRef.current = [];
+    solutionPushesRef.current = [];
+    activePushIndexRef.current = 0;
+    solutionStepIdxRef.current = 0;
+    unlockedHintKeyRef.current = null;
     setFullSolutionMoves([]);
     setSolutionPushes([]);
     setActivePushIndex(0);
@@ -201,12 +212,16 @@ export default function App() {
     const newLvl = generateLevel(chapter, level, activeHardcore);
     setLevelData(newLvl);
     setPlayerPos(newLvl.playerStart);
+    playerPosRef.current = newLvl.playerStart;
     setPlayerDir('DOWN');
     setBoxes(newLvl.initialBoxes);
+    boxesRef.current = newLvl.initialBoxes;
     setMovesCount(0);
+    movesCountRef.current = 0;
     setMoveHistory([]);
     setIsMoving(false);
     setIsVictorious(false);
+    isVictoriousRef.current = false;
     setHintSteps([]);
 
     // Save as current position for resume functionality
@@ -250,12 +265,12 @@ export default function App() {
     }
 
     if (screen === 'CHAPTER_SELECT') {
-      setScreen('MAIN_MENU');
+      setScreen(returnScreen);
       return;
     }
 
     if (screen === 'SHOP' || screen === 'SETTINGS') {
-      setScreen('MAIN_MENU');
+      setScreen(returnScreen);
       return;
     }
 
@@ -287,7 +302,7 @@ export default function App() {
         showToast('Press Back once more to exit', 'info', 2000);
       }
     }
-  }, [isAboutOpen, screen, levelData, loadChamber, showToast]);
+  }, [isAboutOpen, screen, returnScreen, showToast]);
 
   useEffect(() => {
     let backListenerHandle: { remove: () => void } | null = null;
@@ -358,12 +373,60 @@ export default function App() {
     });
   }, [levelData]);
 
+  // Build droid approach path arrows toward the current active solution push
+  const buildApproachHintSteps = useCallback((
+    startP: Position,
+    pushStep: SolutionPushStep | undefined,
+    currentBoxes: BoxItem[]
+  ): HintStep[] => {
+    if (!pushStep) return [];
+    const movable = currentBoxes.filter(b => b.type !== 'FIXED').map(b => ({ x: b.x, y: b.y }));
+    const fixed = currentBoxes.filter(b => b.type === 'FIXED').map(b => ({ x: b.x, y: b.y }));
+    const walk = findWalkPath(
+      levelData.width,
+      levelData.height,
+      levelData.grid,
+      startP,
+      pushStep.playerApproachPos,
+      movable,
+      levelData.exitPos,
+      levelData.hasLaser,
+      levelData.laserPos,
+      levelData.plates,
+      fixed
+    );
+    if (!walk || walk.length === 0) return [];
+    const deltaMap: Record<Direction, { dx: number; dy: number }> = {
+      UP: { dx: 0, dy: -1 },
+      DOWN: { dx: 0, dy: 1 },
+      LEFT: { dx: -1, dy: 0 },
+      RIGHT: { dx: 1, dy: 0 },
+    };
+    const steps: HintStep[] = [];
+    let cur = { ...startP };
+    for (let i = 0; i < walk.length; i++) {
+      const d = deltaMap[walk[i]];
+      cur = { x: cur.x + d.dx, y: cur.y + d.dy };
+      steps.push({ x: cur.x, y: cur.y, dir: walk[i], step: i + 1 });
+    }
+    return steps;
+  }, [levelData]);
+
   // Execute Player Movement & Box Pushing
   const handleMove = useCallback((dir: Direction): boolean => {
     if (isVictoriousRef.current) return false;
 
     const currentP = playerPosRef.current;
     const currentBoxes = boxesRef.current;
+
+    const currentLaserActive =
+      levelData.hasLaser &&
+      levelData.plates.length > 0 &&
+      !levelData.plates.some(
+        pl =>
+          currentBoxes.some(b => b.x === pl.x && b.y === pl.y) ||
+          (currentP.x === pl.x && currentP.y === pl.y)
+      );
 
     const delta = {
       UP: { dx: 0, dy: -1 },
@@ -389,7 +452,7 @@ export default function App() {
     }
 
     // 3. Laser check
-    if (laserActive && levelData.laserPos && targetX === levelData.laserPos.x && targetY === levelData.laserPos.y) {
+    if (currentLaserActive && levelData.laserPos && targetX === levelData.laserPos.x && targetY === levelData.laserPos.y) {
       sound.playBump();
       showToast('Laser barrier active! Push a core onto the switch.', 'warning');
       return false;
@@ -432,7 +495,7 @@ export default function App() {
         pushY >= levelData.height ||
         levelData.grid[pushY][pushX] === 'WALL' ||
         (pushX === levelData.exitPos.x && pushY === levelData.exitPos.y) ||
-        (laserActive && levelData.laserPos && pushX === levelData.laserPos.x && pushY === levelData.laserPos.y) ||
+        (currentLaserActive && levelData.laserPos && pushX === levelData.laserPos.x && pushY === levelData.laserPos.y) ||
         currentBoxes.some(b => b.x === pushX && b.y === pushY)
       ) {
         sound.playBump();
@@ -444,10 +507,11 @@ export default function App() {
 
       const pushedBox = currentBoxes[boxIndex];
       const newBoxes = currentBoxes.map((b, i) => (i === boxIndex ? { ...b, x: pushX, y: pushY } : b));
+      const newPlayerPos = { x: targetX, y: targetY };
 
       const step: MoveStep = {
         playerFrom: { ...currentP },
-        playerTo: { x: targetX, y: targetY },
+        playerTo: newPlayerPos,
         boxMoved: {
           id: pushedBox.id,
           from: { x: targetX, y: targetY },
@@ -458,8 +522,8 @@ export default function App() {
       setMoveHistory(prev => [...prev, step]);
       setBoxes(newBoxes);
       boxesRef.current = newBoxes;
-      setPlayerPos({ x: targetX, y: targetY });
-      playerPosRef.current = { x: targetX, y: targetY };
+      setPlayerPos(newPlayerPos);
+      playerPosRef.current = newPlayerPos;
       setMovesCount(m => m + 1);
       movesCountRef.current += 1;
 
@@ -468,9 +532,10 @@ export default function App() {
         sound.playPlateClick();
       }
 
-      // Corner deadlock check
-      if (isBoxDeadlocked({ x: pushX, y: pushY }, levelData.width, levelData.height, levelData.grid, levelData.plates)) {
-        showToast('Corner deadlock! Core trapped. Press Undo.', 'warning', 2500);
+      // Corner / rail deadlock check
+      const fixedObs = newBoxes.filter(b => b.type === 'FIXED').map(b => ({ x: b.x, y: b.y }));
+      if (isBoxDeadlocked({ x: pushX, y: pushY }, levelData.width, levelData.height, levelData.grid, levelData.plates, fixedObs, levelData.exitPos)) {
+        showToast('Deadlock! Core trapped. Press Undo.', 'warning', 2500);
       }
 
       // Check if all plates just became energized
@@ -479,10 +544,22 @@ export default function App() {
       );
 
       if (willAllCovered) {
+        setHintSteps([]);
         showToast('All power cores docked! Chamber cleared!', 'success', 2500);
         setTimeout(() => {
           handleChamberVictory(movesCountRef.current);
         }, 400);
+      } else if (solutionPushesRef.current.length > 0) {
+        // Advance active push if matched, or refresh approach trail
+        const idx = activePushIndexRef.current;
+        const curPush = solutionPushesRef.current[idx];
+        let nextIdx = idx;
+        if (curPush && curPush.from.x === targetX && curPush.from.y === targetY && curPush.to.x === pushX && curPush.to.y === pushY) {
+          nextIdx = Math.min(solutionPushesRef.current.length - 1, idx + 1);
+          activePushIndexRef.current = nextIdx;
+          setActivePushIndex(nextIdx);
+        }
+        setHintSteps(buildApproachHintSteps(newPlayerPos, solutionPushesRef.current[nextIdx], newBoxes));
       }
 
       setProgress(prev => ({
@@ -497,33 +574,27 @@ export default function App() {
       setIsMoving(true);
       setTimeout(() => setIsMoving(false), 120);
 
-      // Advance active push in solution guide if this push matches
-      setActivePushIndex(idx => {
-        if (solutionPushes.length > idx) {
-          const curPush = solutionPushes[idx];
-          if (curPush && curPush.from.x === targetX && curPush.from.y === targetY && curPush.to.x === pushX && curPush.to.y === pushY) {
-            return idx + 1;
-          }
-        }
-        return idx;
-      });
-
-
       return true;
     } else {
       // Step into empty cell
       sound.playStep();
+      const newPlayerPos = { x: targetX, y: targetY };
 
       const step: MoveStep = {
         playerFrom: { ...currentP },
-        playerTo: { x: targetX, y: targetY },
+        playerTo: newPlayerPos,
       };
 
       setMoveHistory(prev => [...prev, step]);
-      setPlayerPos({ x: targetX, y: targetY });
-      playerPosRef.current = { x: targetX, y: targetY };
+      setPlayerPos(newPlayerPos);
+      playerPosRef.current = newPlayerPos;
       setMovesCount(m => m + 1);
       movesCountRef.current += 1;
+
+      if (solutionPushesRef.current.length > 0) {
+        const curPush = solutionPushesRef.current[activePushIndexRef.current];
+        setHintSteps(buildApproachHintSteps(newPlayerPos, curPush, currentBoxes));
+      }
 
       setProgress(prev => ({
         ...prev,
@@ -542,12 +613,11 @@ export default function App() {
 
       return true;
     }
-  }, [levelData, laserActive, showToast, handleChamberVictory, solutionPushes]);
+  }, [levelData, showToast, handleChamberVictory, buildApproachHintSteps]);
 
   // Step intentionally towards a tapped square (adjacent step or directional push)
   const handleMoveToCell = useCallback((destX: number, destY: number) => {
     if (isVictoriousRef.current) return;
-    if (hintSteps.length > 0) setHintSteps([]);
 
     const curP = playerPosRef.current;
     const dx = destX - curP.x;
@@ -562,7 +632,7 @@ export default function App() {
       else if (dy === 1) handleMove('DOWN');
       else if (dy === -1) handleMove('UP');
     }
-  }, [hintSteps, handleMove]);
+  }, [handleMove]);
 
   // DOUBLE-CLICK / DOUBLE-TAP AUTO-WALK:
   // Paths the droid directly to any reachable cell with BFS so player doesn't have to step square-by-square!
@@ -701,21 +771,52 @@ export default function App() {
     setPlayerPos(lastStep.playerFrom);
     playerPosRef.current = lastStep.playerFrom;
 
+    let restoredBoxes = boxesRef.current;
     if (lastStep.boxMoved) {
-      const restored = boxesRef.current.map(b =>
+      restoredBoxes = boxesRef.current.map(b =>
         b.id === lastStep.boxMoved!.id
           ? { ...b, x: lastStep.boxMoved!.from.x, y: lastStep.boxMoved!.from.y }
           : b
       );
-      setBoxes(restored);
-      boxesRef.current = restored;
+      setBoxes(restoredBoxes);
+      boxesRef.current = restoredBoxes;
+    }
+
+    // Re-sync solution guide if active for this chamber
+    if (solutionPushesRef.current.length > 0) {
+      const movable = restoredBoxes.filter(b => b.type !== 'FIXED').map(b => ({ x: b.x, y: b.y }));
+      const fixed = restoredBoxes.filter(b => b.type === 'FIXED').map(b => ({ x: b.x, y: b.y }));
+      const sol = solvePuzzle(
+        levelData.width,
+        levelData.height,
+        levelData.grid,
+        lastStep.playerFrom,
+        movable,
+        levelData.exitPos,
+        levelData.hasLaser,
+        levelData.laserPos,
+        levelData.plates,
+        fixed,
+        25000
+      );
+      if (sol.solvable) {
+        fullSolutionMovesRef.current = sol.solutionMoves;
+        solutionPushesRef.current = sol.solutionPushes;
+        activePushIndexRef.current = 0;
+        solutionStepIdxRef.current = 0;
+        setFullSolutionMoves(sol.solutionMoves);
+        setSolutionPushes(sol.solutionPushes);
+        setActivePushIndex(0);
+        setSolutionStepIndex(0);
+        setHintSteps(buildApproachHintSteps(lastStep.playerFrom, sol.solutionPushes[0], restoredBoxes));
+      }
     }
 
     setMoveHistory(prev => prev.slice(0, -1));
     setMovesCount(m => Math.max(0, m - 1));
     movesCountRef.current = Math.max(0, movesCountRef.current - 1);
     sound.playStep();
-  }, [moveHistory, isVictorious]);
+  }, [moveHistory, isVictorious, levelData, buildApproachHintSteps]);
 
   // Reset Current Chamber
   const handleResetLevel = useCallback(() => {
@@ -741,15 +842,67 @@ export default function App() {
     setIsMoving(false);
     setIsVictorious(false);
     isVictoriousRef.current = false;
+
+    // If solution guide is unlocked for this chamber, re-align it from start
+    const chamberKey = `${levelData.chapter}-${levelData.level}-${isHardcore ? 'P' : 'N'}`;
+    if (unlockedHintKeyRef.current === chamberKey) {
+      const initMovable = levelData.initialBoxes.filter(b => b.type !== 'FIXED').map(b => ({ x: b.x, y: b.y }));
+      const initFixed = levelData.initialBoxes.filter(b => b.type === 'FIXED').map(b => ({ x: b.x, y: b.y }));
+      const sol = solvePuzzle(
+        levelData.width,
+        levelData.height,
+        levelData.grid,
+        levelData.playerStart,
+        initMovable,
+        levelData.exitPos,
+        levelData.hasLaser,
+        levelData.laserPos,
+        levelData.plates,
+        initFixed,
+        35000
+      );
+      if (sol.solvable) {
+        fullSolutionMovesRef.current = sol.solutionMoves;
+        solutionPushesRef.current = sol.solutionPushes;
+        activePushIndexRef.current = 0;
+        solutionStepIdxRef.current = 0;
+        setFullSolutionMoves(sol.solutionMoves);
+        setSolutionPushes(sol.solutionPushes);
+        setActivePushIndex(0);
+        setSolutionStepIndex(0);
+        setHintSteps(buildApproachHintSteps(levelData.playerStart, sol.solutionPushes[0], levelData.initialBoxes));
+      }
+    } else {
+      setHintSteps([]);
+    }
+
     sound.playStep();
     showToast('Chamber Reset', 'info', 1000);
-  }, [levelData, showToast]);
+  }, [levelData, isHardcore, buildApproachHintSteps, showToast]);
 
   // USE HINT (HELP):
-  // Reveals complete solution with cube push arrows and enables "Test Run / Auto-Solve"!
+  // Unlocks complete cube-push solution for this chamber (without charging twice on the same level)
+  // and lets the gamer watch Auto-Solve or step 1 push at a time!
   const handleHint = useCallback(() => {
-    if (progress.helpsRemaining <= 0) {
+    if (isVictoriousRef.current) return;
+
+    if (solutionTimerRef.current) {
+      clearInterval(solutionTimerRef.current);
+      solutionTimerRef.current = null;
+      setIsSolutionAutoPlaying(false);
+    }
+    if (autoWalkTimerRef.current) {
+      clearInterval(autoWalkTimerRef.current);
+      autoWalkTimerRef.current = null;
+      setAutoWalkTarget(null);
+    }
+
+    const chamberKey = `${levelData.chapter}-${levelData.level}-${isHardcore ? 'P' : 'N'}`;
+    const alreadyUnlocked = unlockedHintKeyRef.current === chamberKey;
+
+    if (!alreadyUnlocked && progress.helpsRemaining <= 0) {
       showToast('No hints remaining! Buy more in the Shop with 10 Points.', 'warning', 2500);
+      setReturnScreen('PLAYING');
       setScreen('SHOP');
       return;
     }
@@ -768,11 +921,14 @@ export default function App() {
       levelData.laserPos,
       levelData.plates,
       fixedBoxes,
-      40000
+      35000
     );
 
-    // If current board state is deadlocked/unsolvable, solve from the start of the chamber!
     let usingReset = false;
+    let activeStartP = playerPosRef.current;
+    let activeBoxesList = boxesRef.current;
+
+    // If current board state is deadlocked/unsolvable, cleanly reset board and solve from start!
     if (!result.solvable || result.solutionMoves.length === 0) {
       usingReset = true;
       setPlayerPos(levelData.playerStart);
@@ -786,6 +942,9 @@ export default function App() {
       setIsMoving(false);
       setIsVictorious(false);
       isVictoriousRef.current = false;
+
+      activeStartP = levelData.playerStart;
+      activeBoxesList = levelData.initialBoxes;
 
       const initialMovable = levelData.initialBoxes.filter(b => b.type !== 'FIXED').map(b => ({ x: b.x, y: b.y }));
       const initialFixed = levelData.initialBoxes.filter(b => b.type === 'FIXED').map(b => ({ x: b.x, y: b.y }));
@@ -801,67 +960,49 @@ export default function App() {
         levelData.laserPos,
         levelData.plates,
         initialFixed,
-        50000
+        45000
       );
     }
 
     if (result.solvable && result.solutionMoves.length > 0) {
-      // Consume 1 Help out of 3
-      setProgress(prev => ({
-        ...prev,
-        helpsRemaining: Math.max(0, prev.helpsRemaining - 1),
-        stats: {
-          ...prev.stats,
-          hintsUsed: prev.stats.hintsUsed + 1,
-        },
-      }));
+      if (!alreadyUnlocked) {
+        unlockedHintKeyRef.current = chamberKey;
+        setProgress(prev => ({
+          ...prev,
+          helpsRemaining: Math.max(0, prev.helpsRemaining - 1),
+          stats: {
+            ...prev.stats,
+            hintsUsed: prev.stats.hintsUsed + 1,
+          },
+        }));
+      }
+
+      fullSolutionMovesRef.current = result.solutionMoves;
+      solutionPushesRef.current = result.solutionPushes;
+      activePushIndexRef.current = 0;
+      solutionStepIdxRef.current = 0;
 
       setFullSolutionMoves(result.solutionMoves);
       setSolutionPushes(result.solutionPushes);
       setActivePushIndex(0);
       setSolutionStepIndex(0);
 
-      // Generate sequence of visual hint approach arrows for the droid
-      const steps: HintStep[] = [];
-      const startP = usingReset ? { ...levelData.playerStart } : { ...playerPosRef.current };
-      let cur = { ...startP };
-      const showCount = Math.min(result.solutionMoves.length, 6);
-
-      for (let i = 0; i < showCount; i++) {
-        const moveDir = result.solutionMoves[i];
-        const d = {
-          UP: { dx: 0, dy: -1 },
-          DOWN: { dx: 0, dy: 1 },
-          LEFT: { dx: -1, dy: 0 },
-          RIGHT: { dx: 1, dy: 0 },
-        }[moveDir];
-
-        cur = { x: cur.x + d.dx, y: cur.y + d.dy };
-        steps.push({
-          x: cur.x,
-          y: cur.y,
-          dir: moveDir,
-          step: i + 1,
-        });
-      }
-
-      setHintSteps(steps);
+      setHintSteps(buildApproachHintSteps(activeStartP, result.solutionPushes[0], activeBoxesList));
       sound.playHintSound();
       showToast(
         usingReset
-          ? `Chamber reset to start. Solution ready (${result.solutionPushes.length} pushes). Tap Auto-Solve to watch!`
-          : `Solution active (${result.solutionPushes.length} pushes). Tap Auto-Solve to test!`,
+          ? `Reset to start · Solution ready (${result.solutionPushes.length} pushes). Tap Auto-Solve to watch!`
+          : `Solution ready (${result.solutionPushes.length} pushes). Follow arrows or tap Auto-Solve!`,
         'success',
-        3500
+        3200
       );
     } else {
       sound.playBump();
-      showToast('Deadlock detected! Press Reset (🔄) to restart chamber.', 'warning', 3000);
+      showToast('Deadlock detected! Press Reset to restart chamber.', 'warning', 3000);
     }
-  }, [progress.helpsRemaining, levelData, showToast]);
+  }, [progress.helpsRemaining, levelData, isHardcore, buildApproachHintSteps, showToast]);
 
-  // TOGGLE AUTO-PLAY OF SOLUTION ("Test Run / Auto-Solve"):
-  // Executes the complete verified solution with smooth animation so gamer can test it!
+  // Execute full verified solution cleanly using synchronous refs (never calls handleMove inside a setState updater!)
   const handleToggleAutoPlaySolution = useCallback(() => {
     if (isSolutionAutoPlaying) {
       if (solutionTimerRef.current) {
@@ -869,36 +1010,177 @@ export default function App() {
         solutionTimerRef.current = null;
       }
       setIsSolutionAutoPlaying(false);
-      showToast('Solution playback paused.', 'info', 1500);
-    } else {
-      if (fullSolutionMoves.length === 0) return;
-      setIsSolutionAutoPlaying(true);
-      showToast('Testing solution... Watch the moves!', 'success', 2000);
-
-      solutionTimerRef.current = setInterval(() => {
-        setSolutionStepIndex(currentIdx => {
-          if (currentIdx >= fullSolutionMoves.length || isVictoriousRef.current) {
-            if (solutionTimerRef.current) {
-              clearInterval(solutionTimerRef.current);
-              solutionTimerRef.current = null;
-            }
-            setIsSolutionAutoPlaying(false);
-            return currentIdx;
-          }
-
-          const nextDir = fullSolutionMoves[currentIdx];
-          handleMove(nextDir);
-          return currentIdx + 1;
-        });
-      }, 190);
+      showToast('Auto-solve paused.', 'info', 1500);
+      return;
     }
-  }, [isSolutionAutoPlaying, fullSolutionMoves, handleMove, showToast]);
 
-  // Advance to next push in solution guide
-  const handleNextPush = useCallback(() => {
-    if (solutionPushes.length === 0) return;
-    setActivePushIndex(prev => (prev + 1) % solutionPushes.length);
-  }, [solutionPushes]);
+    if (autoWalkTimerRef.current) {
+      clearInterval(autoWalkTimerRef.current);
+      autoWalkTimerRef.current = null;
+      setAutoWalkTarget(null);
+    }
+
+    // Re-verify from current board state so Auto-Solve ALWAYS completes 100% accurately!
+    const movableBoxes = boxesRef.current.filter(b => b.type !== 'FIXED').map(b => ({ x: b.x, y: b.y }));
+    const fixedBoxes = boxesRef.current.filter(b => b.type === 'FIXED').map(b => ({ x: b.x, y: b.y }));
+
+    let fresh = solvePuzzle(
+      levelData.width,
+      levelData.height,
+      levelData.grid,
+      playerPosRef.current,
+      movableBoxes,
+      levelData.exitPos,
+      levelData.hasLaser,
+      levelData.laserPos,
+      levelData.plates,
+      fixedBoxes,
+      35000
+    );
+
+    if (!fresh.solvable || fresh.solutionMoves.length === 0) {
+      // Current board is deadlocked; reset to start and solve cleanly
+      setPlayerPos(levelData.playerStart);
+      playerPosRef.current = levelData.playerStart;
+      setPlayerDir('DOWN');
+      setBoxes(levelData.initialBoxes);
+      boxesRef.current = levelData.initialBoxes;
+      setMovesCount(0);
+      movesCountRef.current = 0;
+      setMoveHistory([]);
+      setIsMoving(false);
+      setIsVictorious(false);
+      isVictoriousRef.current = false;
+
+      const initMovable = levelData.initialBoxes.filter(b => b.type !== 'FIXED').map(b => ({ x: b.x, y: b.y }));
+      const initFixed = levelData.initialBoxes.filter(b => b.type === 'FIXED').map(b => ({ x: b.x, y: b.y }));
+      fresh = solvePuzzle(
+        levelData.width,
+        levelData.height,
+        levelData.grid,
+        levelData.playerStart,
+        initMovable,
+        levelData.exitPos,
+        levelData.hasLaser,
+        levelData.laserPos,
+        levelData.plates,
+        initFixed,
+        45000
+      );
+    }
+
+    if (!fresh.solvable || fresh.solutionMoves.length === 0) {
+      showToast('Unable to auto-solve this state.', 'warning', 2000);
+      return;
+    }
+
+    fullSolutionMovesRef.current = fresh.solutionMoves;
+    solutionPushesRef.current = fresh.solutionPushes;
+    activePushIndexRef.current = 0;
+    solutionStepIdxRef.current = 0;
+
+    setFullSolutionMoves(fresh.solutionMoves);
+    setSolutionPushes(fresh.solutionPushes);
+    setActivePushIndex(0);
+    setSolutionStepIndex(0);
+    setHintSteps(buildApproachHintSteps(playerPosRef.current, fresh.solutionPushes[0], boxesRef.current));
+
+    setIsSolutionAutoPlaying(true);
+    showToast('Auto-solving chamber step by step...', 'success', 2000);
+
+    solutionTimerRef.current = setInterval(() => {
+      const idx = solutionStepIdxRef.current;
+      const moves = fullSolutionMovesRef.current;
+
+      if (idx >= moves.length || isVictoriousRef.current) {
+        if (solutionTimerRef.current) {
+          clearInterval(solutionTimerRef.current);
+          solutionTimerRef.current = null;
+        }
+        setIsSolutionAutoPlaying(false);
+        return;
+      }
+
+      const nextDir = moves[idx];
+      solutionStepIdxRef.current = idx + 1;
+      setSolutionStepIndex(idx + 1);
+      handleMove(nextDir);
+    }, 170);
+  }, [isSolutionAutoPlaying, levelData, handleMove, buildApproachHintSteps, showToast]);
+
+  // Interactive "Step 1 Push": auto-walks droid behind the next core and performs that 1 cube push
+  const handleStepNextPush = useCallback(() => {
+    if (isVictoriousRef.current || isSolutionAutoPlaying) return;
+
+    if (autoWalkTimerRef.current) {
+      clearInterval(autoWalkTimerRef.current);
+      autoWalkTimerRef.current = null;
+      setAutoWalkTarget(null);
+    }
+
+    const movableBoxes = boxesRef.current.filter(b => b.type !== 'FIXED').map(b => ({ x: b.x, y: b.y }));
+    const fixedBoxes = boxesRef.current.filter(b => b.type === 'FIXED').map(b => ({ x: b.x, y: b.y }));
+
+    const fresh = solvePuzzle(
+      levelData.width,
+      levelData.height,
+      levelData.grid,
+      playerPosRef.current,
+      movableBoxes,
+      levelData.exitPos,
+      levelData.hasLaser,
+      levelData.laserPos,
+      levelData.plates,
+      fixedBoxes,
+      35000
+    );
+
+    if (!fresh.solvable || fresh.solutionPushes.length === 0) {
+      showToast('Current position is deadlocked — tap Auto-Solve or Reset.', 'warning', 2200);
+      return;
+    }
+
+    fullSolutionMovesRef.current = fresh.solutionMoves;
+    solutionPushesRef.current = fresh.solutionPushes;
+    activePushIndexRef.current = 0;
+    solutionStepIdxRef.current = 0;
+
+    setFullSolutionMoves(fresh.solutionMoves);
+    setSolutionPushes(fresh.solutionPushes);
+    setActivePushIndex(0);
+    setSolutionStepIndex(0);
+
+    const firstPush = fresh.solutionPushes[0];
+    const walk = findWalkPath(
+      levelData.width,
+      levelData.height,
+      levelData.grid,
+      playerPosRef.current,
+      firstPush.playerApproachPos,
+      movableBoxes,
+      levelData.exitPos,
+      levelData.hasLaser,
+      levelData.laserPos,
+      levelData.plates,
+      fixedBoxes
+    );
+
+    if (!walk) return;
+    const sequence: Direction[] = [...walk, firstPush.dir];
+    let stepIdx = 0;
+
+    autoWalkTimerRef.current = setInterval(() => {
+      if (stepIdx >= sequence.length || isVictoriousRef.current) {
+        if (autoWalkTimerRef.current) {
+          clearInterval(autoWalkTimerRef.current);
+          autoWalkTimerRef.current = null;
+        }
+        return;
+      }
+      const d = sequence[stepIdx++];
+      handleMove(d);
+    }, 95);
+  }, [isSolutionAutoPlaying, levelData, handleMove, showToast]);
 
   // Shop purchase handler: 10 points = 1 help
   const handleBuyHelp = useCallback((amount: number, cost: number): boolean => {
@@ -1014,9 +1296,18 @@ export default function App() {
             setScreen('PLAYING');
             if (soundSettings.musicEnabled) sound.startMusic();
           }}
-          onOpenChapters={() => setScreen('CHAPTER_SELECT')}
-          onOpenShop={() => setScreen('SHOP')}
-          onOpenSettings={() => setScreen('SETTINGS')}
+          onOpenChapters={() => {
+            setReturnScreen('MAIN_MENU');
+            setScreen('CHAPTER_SELECT');
+          }}
+          onOpenShop={() => {
+            setReturnScreen('MAIN_MENU');
+            setScreen('SHOP');
+          }}
+          onOpenSettings={() => {
+            setReturnScreen('MAIN_MENU');
+            setScreen('SETTINGS');
+          }}
           onOpenAbout={() => setIsAboutOpen(true)}
           onStartNewGame={() => {
             loadChamber(1, 1);
@@ -1040,8 +1331,14 @@ export default function App() {
             isHardcore={isHardcore}
             onToggleHardcore={toggleHardcore}
             onBack={handleBackAction}
-            onOpenShop={() => setScreen('SHOP')}
-            onOpenSettings={() => setScreen('SETTINGS')}
+            onOpenShop={() => {
+              setReturnScreen('PLAYING');
+              setScreen('SHOP');
+            }}
+            onOpenSettings={() => {
+              setReturnScreen('PLAYING');
+              setScreen('SETTINGS');
+            }}
             onToggleMusic={() => {
               setSoundSettings(s => {
                 const next = !s.musicEnabled;
@@ -1059,18 +1356,17 @@ export default function App() {
           <div className="flex-1 flex flex-col items-center justify-center p-2">
             {/* Interactive Solution Guide Bar */}
             {fullSolutionMoves.length > 0 && !isVictorious && (
-              <div className="w-full max-w-md mx-auto mb-2 p-3 rounded-2xl bg-white border-2 border-amber-400 shadow-md flex flex-col gap-2 text-xs">
+              <div className="w-full max-w-md mx-auto mb-2 p-2.5 rounded-2xl bg-white border-2 border-amber-400 shadow-md flex flex-col gap-2 text-xs">
                 {/* Header Row */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse" />
-                    <span className="font-extrabold text-slate-900">
-                      Solution Guide · {solutionPushes.length} Pushes ({fullSolutionMoves.length} Moves)
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
+                    <span className="font-extrabold text-slate-900 truncate">
+                      Solution · {solutionPushes.length} Pushes
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    {/* Auto-Solve / Test Run Button */}
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       onClick={handleToggleAutoPlaySolution}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95 shadow-xs cursor-pointer ${
@@ -1080,46 +1376,77 @@ export default function App() {
                       }`}
                     >
                       {isSolutionAutoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-                      <span>{isSolutionAutoPlaying ? 'Pause' : 'Test Run / Auto-Solve'}</span>
+                      <span>{isSolutionAutoPlaying ? 'Pause' : 'Auto-Solve'}</span>
                     </button>
 
-                    {/* Close Guide */}
                     <button
                       onClick={() => {
-                        if (solutionTimerRef.current) clearInterval(solutionTimerRef.current);
+                        if (solutionTimerRef.current) {
+                          clearInterval(solutionTimerRef.current);
+                          solutionTimerRef.current = null;
+                        }
+                        fullSolutionMovesRef.current = [];
+                        solutionPushesRef.current = [];
+                        activePushIndexRef.current = 0;
+                        solutionStepIdxRef.current = 0;
                         setFullSolutionMoves([]);
                         setSolutionPushes([]);
                         setHintSteps([]);
                         setIsSolutionAutoPlaying(false);
                       }}
                       className="p-1.5 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-900 cursor-pointer"
-                      title="Close Solution Guide"
+                      title="Hide Solution Guide"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
-                {/* Push Step Details & Stepper */}
+                {/* All Cube Push Sequence Chips */}
+                <div className="flex items-center gap-1 overflow-x-auto pb-0.5">
+                  {solutionPushes.map((p, idx) => {
+                    const arrowChar = p.dir === 'UP' ? '↑' : p.dir === 'DOWN' ? '↓' : p.dir === 'LEFT' ? '←' : '→';
+                    const isActive = idx === activePushIndex;
+                    return (
+                      <button
+                        key={`push-chip-${p.pushNumber}-${idx}`}
+                        onClick={() => {
+                          activePushIndexRef.current = idx;
+                          setActivePushIndex(idx);
+                          setHintSteps(buildApproachHintSteps(playerPosRef.current, p, boxesRef.current));
+                        }}
+                        className={`px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold shrink-0 border transition-all cursor-pointer ${
+                          isActive
+                            ? 'bg-amber-500 text-white border-amber-600 shadow-xs'
+                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-amber-50'
+                        }`}
+                      >
+                        #{p.pushNumber} {arrowChar}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Push Step Details & Action Controls */}
                 {activePush && (
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px] text-slate-600 font-medium">
-                    <div className="flex items-center gap-1.5">
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px] text-slate-600 font-medium gap-2">
+                    <div className="flex items-center gap-1.5 truncate">
                       <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold font-mono">
-                        Step {activePush.pushNumber}/{solutionPushes.length}
+                        Push {activePush.pushNumber}/{solutionPushes.length}
                       </span>
-                      <span>
-                        Push Core <b>{activePush.dir}</b> from ({activePush.from.x},{activePush.from.y})
+                      <span className="truncate">
+                        Move core <b>{activePush.dir}</b> from ({activePush.from.x},{activePush.from.y})
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
-                        onClick={handleNextPush}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer"
-                        title="Show Next Push in sequence"
+                        onClick={handleStepNextPush}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold cursor-pointer"
+                        title="Demonstrate the next single cube push"
                       >
                         <StepForward className="w-3 h-3" />
-                        <span>Next Push</span>
+                        <span>Step Push</span>
                       </button>
 
                       <button
@@ -1128,7 +1455,7 @@ export default function App() {
                         title="Reset board to try moves yourself"
                       >
                         <RotateCcw className="w-3 h-3" />
-                        <span>Try Myself</span>
+                        <span>Reset</span>
                       </button>
                     </div>
                   </div>
@@ -1213,7 +1540,7 @@ export default function App() {
             setSelectedChapterForLevels(chId);
             setScreen('LEVEL_SELECT');
           }}
-          onClose={() => setScreen(levelData ? 'PLAYING' : 'MAIN_MENU')}
+          onClose={() => setScreen(returnScreen)}
         />
       )}
 
@@ -1240,7 +1567,7 @@ export default function App() {
         <ShopModal
           progress={progress}
           onBuyHelp={handleBuyHelp}
-          onClose={() => setScreen(levelData ? 'PLAYING' : 'MAIN_MENU')}
+          onClose={() => setScreen(returnScreen)}
         />
       )}
 
@@ -1255,7 +1582,7 @@ export default function App() {
             loadChamber(1, 1);
             showToast('Progress Reset', 'info');
           }}
-          onClose={() => setScreen(levelData ? 'PLAYING' : 'MAIN_MENU')}
+          onClose={() => setScreen(returnScreen)}
         />
       )}
 

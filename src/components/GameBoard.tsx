@@ -329,7 +329,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           {/* Render 3D Movable Cubes */}
           {boxes.map((box, bIdx) => {
             const isOnPlate = level.plates.some(pl => pl.x === box.x && pl.y === box.y);
-            const isDeadlocked = !isOnPlate && isBoxDeadlocked(box, level.width, level.height, level.grid, level.plates);
+            const isDeadlocked = !isOnPlate && isBoxDeadlocked(box, level.width, level.height, level.grid, level.plates, [], level.exitPos);
 
             // Is this box the one to be pushed next in the solution guide?
             const isNextToPush = activePush && activePush.from.x === box.x && activePush.from.y === box.y;
@@ -414,11 +414,11 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 top: `${(step.y / level.height) * 100}%`,
               }}
             >
-              <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-900 font-bold text-[9px] flex items-center justify-center shadow-md border border-white">
-                {step.dir === 'UP' ? <ArrowUp className="w-3 h-3 stroke-[3]" /> :
-                 step.dir === 'DOWN' ? <ArrowDown className="w-3 h-3 stroke-[3]" /> :
-                 step.dir === 'LEFT' ? <ArrowLeft className="w-3 h-3 stroke-[3]" /> :
-                 <ArrowRight className="w-3 h-3 stroke-[3]" />}
+              <div className="w-4 h-4 rounded-full bg-sky-500/90 text-white font-bold text-[8px] flex items-center justify-center shadow-sm border border-white">
+                {step.dir === 'UP' ? <ArrowUp className="w-2.5 h-2.5 stroke-[3]" /> :
+                 step.dir === 'DOWN' ? <ArrowDown className="w-2.5 h-2.5 stroke-[3]" /> :
+                 step.dir === 'LEFT' ? <ArrowLeft className="w-2.5 h-2.5 stroke-[3]" /> :
+                 <ArrowRight className="w-2.5 h-2.5 stroke-[3]" />}
               </div>
             </div>
           ))}
