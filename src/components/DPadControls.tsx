@@ -17,55 +17,49 @@ export const DPadControls: React.FC<GameActionBarProps> = ({
   hintsRemaining,
 }) => {
   return (
-    <div className="w-full max-w-sm mx-auto flex flex-col items-center gap-2 px-3 pb-3 pt-1 select-none">
-      {/* Sleek Action Bar: Undo, Reset, Hint (No movement arrows) */}
-      <div className="w-full flex items-center justify-between gap-3 bg-white border border-slate-200 py-2 px-3.5 rounded-2xl shadow-md">
-        {/* Undo Button */}
+    <div className="w-full max-w-[440px] mx-auto flex flex-col items-center gap-2 px-3 pb-3 pt-1 select-none">
+      {/* Tactile Keycap Dock: Undo, Reset, Hint */}
+      <div className="w-full flex items-center justify-between gap-2.5 bg-[#e6e0d4] border border-[#cbc2b2] p-2 rounded-2xl shadow-sm">
         <button
           onClick={onUndo}
           disabled={!canUndo}
           aria-label="Undo move"
-          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-semibold transition-all active:scale-95 ${
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
             canUndo
-              ? 'bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100 shadow-xs'
-              : 'bg-slate-50/50 border-slate-100 text-slate-300 cursor-not-allowed'
+              ? 'bg-[#faf7f0] border-[#d3cab9] text-[#1f242c] hover:bg-white shadow-[0_2px_0_#c6beb0] active:translate-y-[1px] active:shadow-none'
+              : 'bg-[#eee9de]/60 border-[#dbd3c5] text-[#a39a8b] cursor-not-allowed'
           }`}
           title="Undo last move (Z)"
         >
-          <Undo2 className={`w-4 h-4 ${canUndo ? 'text-sky-600' : 'text-slate-300'}`} />
+          <Undo2 className={`w-4 h-4 ${canUndo ? 'text-[#0284c7]' : 'text-[#b5ac9d]'}`} />
           <span>Undo</span>
         </button>
 
-        {/* Reset Button */}
         <button
           onClick={onReset}
           aria-label="Reset chamber"
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 hover:text-rose-700 hover:bg-rose-50 active:scale-95 transition-all text-xs font-semibold shadow-xs"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#faf7f0] border border-[#d3cab9] text-[#1f242c] hover:bg-white shadow-[0_2px_0_#c6beb0] active:translate-y-[1px] active:shadow-none transition-all text-xs font-bold whitespace-nowrap cursor-pointer"
           title="Restart chamber (R)"
         >
-          <RotateCcw className="w-4 h-4 text-rose-600" />
+          <RotateCcw className="w-4 h-4 text-[#b91c1c]" />
           <span>Reset</span>
         </button>
 
-        {/* Hint / Help Button */}
         <button
           onClick={onHint}
-          aria-label="Use hint to view solution"
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 hover:bg-amber-100 active:scale-95 transition-all text-xs font-bold shadow-xs"
-          title="Show cube push solution and auto-solve test (H)"
+          aria-label="Show solution hint"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-[#d97706] hover:bg-[#b45309] border border-[#b45309] text-white shadow-[0_2px_0_#92400e] active:translate-y-[1px] active:shadow-none transition-all text-xs font-bold whitespace-nowrap cursor-pointer"
+          title="Show cube push solution (H)"
         >
-          <Lightbulb className="w-4 h-4 text-amber-600" />
-          <span>Hint</span>
-          <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-black font-mono">
-            {hintsRemaining}
-          </span>
+          <Lightbulb className="w-4 h-4 text-amber-100" />
+          <span>Hint ({hintsRemaining})</span>
         </button>
       </div>
 
-      {/* Helpful gesture instructions */}
-      <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium text-center">
-        <Hand className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-        <span>Swipe to push · Double-tap any tile to walk there</span>
+      {/* Concise Touch Gesture Tip */}
+      <div className="flex items-center gap-1.5 text-[11px] text-[#6b6356] font-medium text-center">
+        <Hand className="w-3.5 h-3.5 text-[#b45309] shrink-0" />
+        <span>Swipe to push · Double-tap any tile to walk</span>
       </div>
     </div>
   );

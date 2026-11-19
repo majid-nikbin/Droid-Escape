@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { App as CapApp } from '@capacitor/app';
-import { Play, Pause, X, StepForward, RotateCcw, Lightbulb } from 'lucide-react';
+import { Play, Pause, X, StepForward, RotateCcw, Lightbulb, Zap, Lock, DoorOpen } from 'lucide-react';
 import { 
   Direction, 
   LevelData, 
@@ -1193,7 +1193,7 @@ export default function App() {
     return true;
   }, [progress.points]);
 
-  // Master Developer Unlock: 5 clicks on "Developer" in About + Passcode 2450 unlocks all 2000 levels
+  // Master Developer Unlock: 5 clicks on "Developer" in About unlocks all 2000 levels
   const handleDeveloperUnlock = useCallback(() => {
     sound.playVictory();
 
@@ -1205,29 +1205,24 @@ export default function App() {
       }
     }
 
-    const updated: UserProgress = {
-      currentChapter: 1,
-      currentLevel: 1,
-      unlockedChapter: 20,
-      points: 9999,
-      helpsRemaining: 999,
-      levelsCompleted: allCompleted,
-      highestLevelCompleted: 2000,
-      stats: {
-        totalBoxesMoved: 1200,
-        totalMovesTaken: 4500,
-        hintsUsed: 0,
-      },
-    };
+    setProgress(prev => {
+      const updated: UserProgress = {
+        ...prev,
+        unlockedChapter: 20,
+        points: Math.max(prev.points, 9999),
+        helpsRemaining: Math.max(prev.helpsRemaining, 999),
+        levelsCompleted: allCompleted,
+        highestLevelCompleted: 2000,
+      };
+      try {
+        localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(updated));
+      } catch {
+        // Ignore
+      }
+      return updated;
+    });
 
-    setProgress(updated);
-    try {
-      localStorage.setItem(PROGRESS_STORAGE_KEY, JSON.stringify(updated));
-    } catch {
-      // Ignore
-    }
-
-    showToast('Code 2450 Accepted: All 20 Chapters & 2,000 Levels Unlocked!', 'success', 4000);
+    showToast('Developer Mode: All 20 Chapters & 2,000 Levels Unlocked!', 'success', 4000);
   }, [showToast]);
 
   // Next level navigation
@@ -1283,7 +1278,7 @@ export default function App() {
   const activePush = solutionPushes[activePushIndex] || solutionPushes[0];
 
   return (
-    <div className="w-full min-h-screen bg-[#f8fafc] text-slate-800 flex flex-col font-sans select-none overflow-x-hidden">
+    <div className="w-full min-h-screen stone-canvas-bg text-[#1f242c] flex flex-col font-sans select-none overflow-x-hidden">
       {/* Floating Toast Notification */}
       <Toast message={toastMessage} type={toastType} />
 
@@ -1356,12 +1351,12 @@ export default function App() {
           <div className="flex-1 flex flex-col items-center justify-center p-2">
             {/* Interactive Solution Guide Bar */}
             {fullSolutionMoves.length > 0 && !isVictorious && (
-              <div className="w-full max-w-md mx-auto mb-2 p-2.5 rounded-2xl bg-white border-2 border-amber-400 shadow-md flex flex-col gap-2 text-xs">
+              <div className="w-full max-w-md mx-auto mb-2 p-2.5 rounded-2xl bg-[#f7f4ed] border-2 border-[#d97706] shadow-md flex flex-col gap-2 text-xs">
                 {/* Header Row */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                    <span className="font-extrabold text-slate-900 truncate">
+                    <Lightbulb className="w-4 h-4 text-[#d97706] shrink-0" />
+                    <span className="font-extrabold text-[#1f242c] truncate tabular-nums">
                       Solution · {solutionPushes.length} Pushes
                     </span>
                   </div>
@@ -1371,8 +1366,8 @@ export default function App() {
                       onClick={handleToggleAutoPlaySolution}
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs transition-all active:scale-95 shadow-xs cursor-pointer ${
                         isSolutionAutoPlaying
-                          ? 'bg-rose-500 text-white hover:bg-rose-600'
-                          : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                          ? 'bg-rose-600 text-white hover:bg-rose-700'
+                          : 'bg-[#0f766e] text-white hover:bg-[#115e59]'
                       }`}
                     >
                       {isSolutionAutoPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
@@ -1394,7 +1389,7 @@ export default function App() {
                         setHintSteps([]);
                         setIsSolutionAutoPlaying(false);
                       }}
-                      className="p-1.5 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-900 cursor-pointer"
+                      className="p-1.5 rounded-xl bg-[#eae4d7] text-[#5c5549] hover:text-[#1f242c] cursor-pointer"
                       title="Hide Solution Guide"
                     >
                       <X className="w-4 h-4" />
@@ -1415,10 +1410,10 @@ export default function App() {
                           setActivePushIndex(idx);
                           setHintSteps(buildApproachHintSteps(playerPosRef.current, p, boxesRef.current));
                         }}
-                        className={`px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold shrink-0 border transition-all cursor-pointer ${
+                        className={`px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold shrink-0 border transition-all cursor-pointer tabular-nums ${
                           isActive
-                            ? 'bg-amber-500 text-white border-amber-600 shadow-xs'
-                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-amber-50'
+                            ? 'bg-[#d97706] text-white border-[#b45309] shadow-xs'
+                            : 'bg-[#eae4d7] text-[#4e483e] border-[#d4cbb9] hover:bg-[#f5ebd6]'
                         }`}
                       >
                         #{p.pushNumber} {arrowChar}
@@ -1429,20 +1424,20 @@ export default function App() {
 
                 {/* Push Step Details & Action Controls */}
                 {activePush && (
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px] text-slate-600 font-medium gap-2">
+                  <div className="flex items-center justify-between pt-1.5 border-t border-[#e4ddd0] text-[11px] text-[#5c5549] font-medium gap-2">
                     <div className="flex items-center gap-1.5 truncate">
-                      <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-bold font-mono">
+                      <span className="px-1.5 py-0.5 rounded bg-[#fef3c7] border border-[#f59e0b]/40 text-[#92400e] font-bold font-mono tabular-nums">
                         Push {activePush.pushNumber}/{solutionPushes.length}
                       </span>
                       <span className="truncate">
-                        Move core <b>{activePush.dir}</b> from ({activePush.from.x},{activePush.from.y})
+                        Move core <b className="text-[#1f242c]">{activePush.dir}</b> ({activePush.from.x},{activePush.from.y})
                       </span>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={handleStepNextPush}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold cursor-pointer"
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#fef3c7] hover:bg-[#fde68a] border border-[#f59e0b]/40 text-[#92400e] font-bold cursor-pointer"
                         title="Demonstrate the next single cube push"
                       >
                         <StepForward className="w-3 h-3" />
@@ -1451,7 +1446,7 @@ export default function App() {
 
                       <button
                         onClick={handleResetLevel}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold cursor-pointer"
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#eae4d7] hover:bg-[#dfd8c8] border border-[#ccc3b3] text-[#3f3a32] font-semibold cursor-pointer"
                         title="Reset board to try moves yourself"
                       >
                         <RotateCcw className="w-3 h-3" />
@@ -1485,19 +1480,34 @@ export default function App() {
 
             {/* Tactical Power Core Status Bar */}
             {levelData.plates.length > 0 && (
-              <div className="w-full max-w-sm mx-auto mt-2 flex items-center justify-between px-3 py-1.5 rounded-2xl bg-white border border-slate-200 text-xs font-mono shadow-xs select-none">
+              <div className="w-full max-w-sm mx-auto mt-2 flex items-center justify-between px-3 py-2 rounded-2xl bg-[#f7f4ed] border border-[#d5cdc0] text-xs font-mono shadow-xs select-none">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2.5 h-2.5 rounded-full ${allPlatesCovered ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
-                  <span className="text-slate-600 font-bold">
-                    POWER CORES: <b className={allPlatesCovered ? 'text-emerald-700 font-black' : 'text-amber-800'}>{coveredPlatesCount} / {levelData.plates.length}</b>
+                  <Zap className={`w-4 h-4 shrink-0 ${allPlatesCovered ? 'text-[#0f766e]' : 'text-[#d97706]'}`} />
+                  <span className="text-[#5c5549] font-bold tabular-nums">
+                    POWER CORES:{' '}
+                    <b className={allPlatesCovered ? 'text-[#0f766e] font-black' : 'text-[#b45309] font-black'}>
+                      {coveredPlatesCount} / {levelData.plates.length}
+                    </b>
                   </span>
                 </div>
-                <div className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${
-                  allPlatesCovered
-                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                    : 'bg-rose-100 text-rose-800 border border-rose-300'
-                }`}>
-                  {allPlatesCovered ? '⚡ EXIT UNSEALED' : '🔒 EXIT LOCKED'}
+                <div
+                  className={`flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-lg border ${
+                    allPlatesCovered
+                      ? 'bg-[#e6f4f1] text-[#0f766e] border-[#99d6cb]'
+                      : 'bg-[#eae4d7] text-[#4e483e] border-[#ccc3b3]'
+                  }`}
+                >
+                  {allPlatesCovered ? (
+                    <>
+                      <DoorOpen className="w-3.5 h-3.5 shrink-0" />
+                      <span>EXIT UNSEALED</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-3.5 h-3.5 text-[#b45309] shrink-0" />
+                      <span>EXIT LOCKED</span>
+                    </>
+                  )}
                 </div>
               </div>
             )}

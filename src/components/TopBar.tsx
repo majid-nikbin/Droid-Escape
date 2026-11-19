@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, Volume2, VolumeX, Music, ShoppingBag, Settings, Award, Flame } from 'lucide-react';
+import { ChevronLeft, Volume2, VolumeX, Music, ShoppingBag, Settings, Award, Flame, Lightbulb } from 'lucide-react';
 import { SoundSettings } from '../types/game';
 
 interface TopBarProps {
@@ -36,84 +36,78 @@ export const TopBar: React.FC<TopBarProps> = ({
   onToggleSfx,
 }) => {
   return (
-    <header className="w-full max-w-xl mx-auto px-4 py-2.5 flex items-center justify-between border-b border-slate-200 bg-white/90 backdrop-blur-md select-none shadow-sm rounded-b-2xl">
-      {/* Zone 1: Back Navigation & Level Title */}
-      <div className="flex items-center gap-2.5">
+    <header className="w-full max-w-xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 border-b border-[#d5cdc0] bg-[#f7f4ec]/95 backdrop-blur-md select-none">
+      {/* Zone 1: Back & Chamber Coordinates */}
+      <div className="flex items-center gap-2.5 min-w-0">
         <button
           onClick={onBack}
           aria-label="Back to Main Menu"
-          className="p-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-200 active:scale-95 transition-all flex items-center justify-center shadow-xs cursor-pointer"
+          className="w-9 h-9 rounded-xl bg-[#eae4d7] border border-[#ccc3b3] text-[#282e37] hover:bg-[#e1d9c9] active:scale-95 transition-all flex items-center justify-center shrink-0 cursor-pointer"
           title="Back to Main Menu"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
 
-        <div className="flex flex-col">
-          <div className="flex items-center gap-1.5 text-xs font-bold tracking-wide">
-            <span className={isHardcore ? 'text-rose-600' : 'text-emerald-700'}>CH {chapter}</span>
-            <span className="text-slate-400">/</span>
-            <span className={isHardcore ? 'text-rose-600' : 'text-emerald-700'}>LVL {level}</span>
+        <div className="flex flex-col leading-tight">
+          <div className="flex items-center gap-1.5 text-xs font-bold tracking-tight whitespace-nowrap">
+            <span className={isHardcore ? 'text-rose-700' : 'text-[#1f242c]'}>
+              Ch {chapter} · Lvl {level}
+            </span>
             {isHardcore && (
-              <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-100 text-rose-700 border border-rose-300 font-extrabold uppercase tracking-wider">
-                PRO
-              </span>
+              <span className="text-[10px] font-extrabold text-rose-700 uppercase">· PRO</span>
             )}
           </div>
-          <div className="text-[11px] text-slate-500 font-mono tabular-nums">
-            Moves: <span className={moves > parMoves ? 'text-amber-600 font-bold' : 'text-slate-800 font-semibold'}>{moves}</span> / {parMoves}
+          <div className="text-[11px] text-[#665f54] font-mono tabular-nums whitespace-nowrap">
+            Moves <span className={moves > parMoves ? 'text-[#b45309] font-bold' : 'text-[#1f242c] font-semibold'}>{moves}</span>/{parMoves}
           </div>
         </div>
       </div>
 
-      {/* Zone 2: Mode Toggle & Player Stats */}
-      <div className="flex items-center gap-2">
+      {/* Zone 2: Pro Toggle + Points & Hints */}
+      <div className="flex items-center gap-1.5 shrink-0">
         {onToggleHardcore && (
           <button
             onClick={onToggleHardcore}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-xl border text-xs font-bold transition-all active:scale-95 ${
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-xs font-bold transition-all active:scale-95 whitespace-nowrap cursor-pointer ${
               isHardcore
-                ? 'bg-rose-50 border-rose-300 text-rose-700 shadow-xs'
-                : 'bg-slate-100 border-slate-200 text-slate-600 hover:text-slate-900'
+                ? 'bg-rose-50 border-rose-300 text-rose-700'
+                : 'bg-[#eae4d7] border-[#ccc3b3] text-[#4e483e] hover:bg-[#e1d9c9]'
             }`}
-            title={isHardcore ? 'Pro Mode Active (Tap for Normal)' : 'Activate Pro Mode (Ultra Hard)'}
+            title={isHardcore ? 'Pro Mode Active' : 'Switch to Pro Mode'}
           >
-            <Flame className={`w-3.5 h-3.5 ${isHardcore ? 'text-rose-600 animate-pulse' : 'text-slate-400'}`} />
-            <span className="text-[10px] tracking-wider uppercase hidden sm:inline">
-              {isHardcore ? 'PRO' : 'NORMAL'}
+            <Flame className={`w-3.5 h-3.5 ${isHardcore ? 'text-rose-600' : 'text-[#7b7365]'}`} />
+            <span className="text-[11px] uppercase hidden sm:inline">
+              {isHardcore ? 'Pro' : 'Std'}
             </span>
           </button>
         )}
 
-        {/* Points Counter */}
         <button
           onClick={onOpenShop}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 hover:bg-amber-100 active:scale-95 transition-all text-xs font-semibold shadow-xs"
-          title="Points (1 per level · 10 pts = 1 hint in shop)"
+          className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#eae4d7] border border-[#ccc3b3] hover:bg-[#e1d9c9] active:scale-95 transition-all text-xs font-mono font-bold tabular-nums whitespace-nowrap cursor-pointer"
+          title="Points & Hints Shop"
         >
-          <Award className="w-3.5 h-3.5 text-amber-600" />
-          <span className="font-mono tabular-nums font-bold">{points}</span>
-        </button>
-
-        {/* Hints Counter */}
-        <button
-          onClick={onOpenShop}
-          className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100 active:scale-95 transition-all text-xs font-semibold shadow-xs"
-          title="Hints remaining (3 available to test/solve chambers)"
-        >
-          <span className="text-[11px]">💡</span>
-          <span className="font-mono tabular-nums font-bold">{helps}</span>
+          <span className="flex items-center gap-1 text-[#92400e]">
+            <Award className="w-3.5 h-3.5 text-[#d97706]" />
+            {points}
+          </span>
+          <span className="text-[#b8afa0]">/</span>
+          <span className="flex items-center gap-1 text-[#0f766e]">
+            <Lightbulb className="w-3.5 h-3.5 text-[#0d9488]" />
+            {helps}
+          </span>
         </button>
       </div>
 
-      {/* Zone 3: Quick Action Controls */}
-      <div className="flex items-center gap-1.5">
+      {/* Zone 3: Quick Audio & Utility Controls */}
+      <div className="flex items-center gap-1 shrink-0">
         <button
           onClick={onToggleMusic}
           aria-label={soundSettings.musicEnabled ? 'Mute Music' : 'Unmute Music'}
-          className={`p-1.5 rounded-xl border transition-all ${
+          className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all cursor-pointer ${
             soundSettings.musicEnabled
-              ? 'bg-teal-50 border-teal-200 text-teal-700 shadow-xs'
-              : 'bg-slate-100 border-slate-200 text-slate-400'
+              ? 'bg-[#e6f4f1] border-[#99d6cb] text-[#0f766e]'
+              : 'bg-[#eae4d7] border-[#ccc3b3] text-[#8c8374]'
           }`}
           title="Toggle Ambient Music"
         >
@@ -123,12 +117,12 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           onClick={onToggleSfx}
           aria-label={soundSettings.sfxEnabled ? 'Mute SFX' : 'Unmute SFX'}
-          className={`p-1.5 rounded-xl border transition-all ${
+          className={`w-8 h-8 rounded-lg border flex items-center justify-center transition-all cursor-pointer ${
             soundSettings.sfxEnabled
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-xs'
-              : 'bg-slate-100 border-slate-200 text-slate-400'
+              ? 'bg-[#e6f4f1] border-[#99d6cb] text-[#0f766e]'
+              : 'bg-[#eae4d7] border-[#ccc3b3] text-[#8c8374]'
           }`}
-          title="Toggle Sound Effects (Authentic Box Knocks)"
+          title="Toggle Sound Effects"
         >
           {soundSettings.sfxEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
         </button>
@@ -136,8 +130,8 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           onClick={onOpenShop}
           aria-label="Open Reward Shop"
-          className="p-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 active:scale-95 transition-all"
-          title="Shop (Exchange Points for Helps)"
+          className="w-8 h-8 rounded-lg bg-[#eae4d7] border border-[#ccc3b3] text-[#4e483e] hover:text-[#1f242c] flex items-center justify-center active:scale-95 transition-all cursor-pointer"
+          title="Shop"
         >
           <ShoppingBag className="w-4 h-4" />
         </button>
@@ -145,7 +139,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           onClick={onOpenSettings}
           aria-label="Open Settings"
-          className="p-1.5 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 active:scale-95 transition-all"
+          className="w-8 h-8 rounded-lg bg-[#eae4d7] border border-[#ccc3b3] text-[#4e483e] hover:text-[#1f242c] flex items-center justify-center active:scale-95 transition-all cursor-pointer"
           title="Settings"
         >
           <Settings className="w-4 h-4" />

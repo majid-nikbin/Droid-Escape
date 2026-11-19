@@ -1,1 +1,24 @@
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html,
+  body {
+    background-color: #ece8df;
+    color: #1f242c;
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.stone-canvas-bg {
+  background-color: #ece8df;
+  background-image:
+    radial-gradient(at 15% 10%, rgba(255, 255, 255, 0.65) 0px, transparent 55%),
+    radial-gradient(at 85% 90%, rgba(217, 119, 6, 0.06) 0px, transparent 50%),
+    linear-gradient(180deg, #f2efe8 0%, #e7e2d7 100%);
+}

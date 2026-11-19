@@ -26,17 +26,15 @@ export const LevelCompleteModal: React.FC<LevelCompleteModalProps> = ({
   onReplay,
   onMainMenu,
 }) => {
-  // Calculate stars: 3 if <= parMoves, 2 if <= parMoves + 4, 1 otherwise
   const stars = moves <= parMoves ? 3 : moves <= parMoves + 4 ? 2 : 1;
 
   useEffect(() => {
-    // Launch festive confetti burst
     try {
       confetti({
-        particleCount: 65,
-        spread: 70,
+        particleCount: 60,
+        spread: 65,
         origin: { y: 0.6 },
-        colors: ['#10B981', '#F59E0B', '#3B82F6', '#14B8A6', '#6366F1'],
+        colors: ['#0D9488', '#D97706', '#272D37', '#10B981', '#F59E0B'],
       });
     } catch {
       // Fallback
@@ -44,22 +42,17 @@ export const LevelCompleteModal: React.FC<LevelCompleteModalProps> = ({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
-      <div className="w-full max-w-sm bg-white border border-slate-200 rounded-3xl p-6 flex flex-col items-center text-center shadow-2xl relative overflow-hidden">
-        {/* Soft top gradient glow */}
-        <div className="absolute top-0 w-full h-24 bg-gradient-to-b from-emerald-100/70 to-transparent pointer-events-none" />
-
-        {/* Celebrating Android Mascot */}
+    <div className="fixed inset-0 z-50 bg-[#1f242c]/60 backdrop-blur-sm flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+      <div className="w-full max-w-sm bg-[#f7f4ed] border border-[#d5cdc0] rounded-3xl p-6 flex flex-col items-center text-center shadow-2xl relative overflow-hidden">
         <div className="w-24 h-24 mb-2 flex items-center justify-center">
           <AndroidMascot direction="DOWN" isVictorious={true} />
         </div>
 
-        {/* Victory Headline */}
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-0.5">
-          CHAMBER CLEARED!
+        <h2 className="text-2xl font-extrabold text-[#1f242c] tracking-tight mb-0.5">
+          Chamber Cleared
         </h2>
-        <p className="text-xs text-emerald-700 font-bold mb-4">
-          Chapter {chapter} · Level {level} Complete
+        <p className="text-xs text-[#0f766e] font-bold mb-4 font-mono">
+          Chapter {chapter} · Level {level}
         </p>
 
         {/* 3-Star Rating */}
@@ -69,61 +62,58 @@ export const LevelCompleteModal: React.FC<LevelCompleteModalProps> = ({
               key={s}
               className={`p-2 rounded-2xl border transition-all duration-300 ${
                 s <= stars
-                  ? 'bg-amber-50 border-amber-300 scale-105 shadow-sm'
-                  : 'bg-slate-100 border-slate-200 opacity-40'
+                  ? 'bg-[#fef3c7] border-[#f59e0b]/60 scale-105 shadow-xs'
+                  : 'bg-[#eae4d7] border-[#d5cdc0] opacity-40'
               }`}
             >
               <Star
                 className={`w-6 h-6 ${
-                  s <= stars ? 'fill-amber-400 text-amber-500' : 'text-slate-400'
+                  s <= stars ? 'fill-[#d97706] text-[#b45309]' : 'text-[#8c8374]'
                 }`}
               />
             </div>
           ))}
         </div>
 
-        {/* Stats Grid */}
-        <div className="w-full grid grid-cols-2 gap-2 mb-4">
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col items-center">
-            <span className="text-[11px] text-slate-500 font-medium">Moves Taken</span>
-            <span className="text-base font-bold font-mono text-slate-800 tabular-nums">
-              {moves} <span className="text-xs text-slate-400">/ {parMoves}</span>
+        {/* Metrics */}
+        <div className="w-full grid grid-cols-2 gap-2.5 mb-4">
+          <div className="p-2.5 rounded-xl bg-white/85 border border-[#d8d0c2] flex flex-col items-center">
+            <span className="text-[11px] text-[#665f54] font-medium">Moves</span>
+            <span className="text-base font-bold font-mono text-[#1f242c] tabular-nums">
+              {moves} <span className="text-xs text-[#8c8374]">/ {parMoves}</span>
             </span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 flex flex-col items-center">
-            <span className="text-[11px] text-amber-800 font-medium">Reward Point</span>
+          <div className="p-2.5 rounded-xl bg-[#fef3c7]/80 border border-[#f59e0b]/40 flex flex-col items-center">
+            <span className="text-[11px] text-[#78350f] font-medium">Earned</span>
             <div className="flex items-center gap-1">
-              <Award className="w-4 h-4 text-amber-600" />
-              <span className="text-base font-bold font-mono text-amber-800 tabular-nums">
-                +{pointsEarned} PTS
+              <Award className="w-4 h-4 text-[#d97706]" />
+              <span className="text-base font-bold font-mono text-[#92400e] tabular-nums">
+                +{pointsEarned} pt
               </span>
             </div>
           </div>
         </div>
 
-        {/* Total Points Balance */}
-        <div className="w-full text-xs text-slate-600 mb-5 flex items-center justify-center gap-1.5 font-mono">
+        <div className="w-full text-xs text-[#665f54] mb-5 flex items-center justify-center gap-1.5 font-mono tabular-nums">
           <span>Balance:</span>
-          <span className="text-amber-700 font-bold">{totalPoints} Pts</span>
-          <span className="text-slate-300">·</span>
-          <span className="text-emerald-700 font-semibold">10 Pts = 1 Help</span>
+          <span className="text-[#92400e] font-bold">{totalPoints} pts</span>
+          <span className="text-[#c0b7a7]">·</span>
+          <span className="text-[#0f766e] font-semibold">10 pts = 1 hint</span>
         </div>
 
-        {/* Primary Next Level Button */}
         <button
           onClick={onNextLevel}
-          className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-extrabold text-sm tracking-wide shadow-md shadow-emerald-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mb-2.5 cursor-pointer"
+          className="w-full py-3.5 px-6 rounded-2xl bg-[#0f766e] hover:bg-[#115e59] text-white font-extrabold text-sm shadow-[0_4px_0_#094c47] active:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-2 mb-2.5 cursor-pointer"
         >
-          <span>NEXT CHAMBER</span>
+          <span>Next Chamber</span>
           <ArrowRight className="w-4 h-4" />
         </button>
 
-        {/* Secondary Buttons */}
         <div className="w-full flex items-center gap-2">
           <button
             onClick={onReplay}
-            className="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 border border-slate-200 cursor-pointer"
+            className="flex-1 py-2.5 px-3 rounded-xl bg-[#eae4d7] hover:bg-[#e1d9c9] text-[#282e37] text-xs font-bold flex items-center justify-center gap-1.5 transition-all border border-[#ccc3b3] cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Replay</span>
@@ -131,10 +121,10 @@ export const LevelCompleteModal: React.FC<LevelCompleteModalProps> = ({
 
           <button
             onClick={onMainMenu}
-            className="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 border border-slate-200 cursor-pointer"
+            className="flex-1 py-2.5 px-3 rounded-xl bg-[#eae4d7] hover:bg-[#e1d9c9] text-[#282e37] text-xs font-bold flex items-center justify-center gap-1.5 transition-all border border-[#ccc3b3] cursor-pointer"
           >
             <Home className="w-3.5 h-3.5" />
-            <span>Main Menu</span>
+            <span>Menu</span>
           </button>
         </div>
       </div>
