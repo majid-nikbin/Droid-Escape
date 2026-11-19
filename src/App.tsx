@@ -1222,7 +1222,7 @@ export default function App() {
       return updated;
     });
 
-    showToast('Developer Mode: All 20 Chapters & 2,000 Levels Unlocked!', 'success', 4000);
+    showToast('Developer Mode Activated: All 20 Chapters & 2,000 Levels Unlocked!', 'success', 4000);
   }, [showToast]);
 
   // Next level navigation
@@ -1278,7 +1278,7 @@ export default function App() {
   const activePush = solutionPushes[activePushIndex] || solutionPushes[0];
 
   return (
-    <div className="w-full min-h-screen stone-canvas-bg text-[#1f242c] flex flex-col font-sans select-none overflow-x-hidden">
+    <div className="w-full min-h-screen navy-canvas-bg text-[#edf3fc] flex flex-col font-sans select-none overflow-x-hidden">
       {/* Floating Toast Notification */}
       <Toast message={toastMessage} type={toastType} />
 
@@ -1351,12 +1351,12 @@ export default function App() {
           <div className="flex-1 flex flex-col items-center justify-center p-2">
             {/* Interactive Solution Guide Bar */}
             {fullSolutionMoves.length > 0 && !isVictorious && (
-              <div className="w-full max-w-md mx-auto mb-2 p-2.5 rounded-2xl bg-[#f7f4ed] border-2 border-[#d97706] shadow-md flex flex-col gap-2 text-xs">
+              <div className="w-full max-w-md mx-auto mb-2 p-2.5 rounded-2xl bg-[#14233c] border-2 border-[#d97706] shadow-lg flex flex-col gap-2 text-xs">
                 {/* Header Row */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
-                    <Lightbulb className="w-4 h-4 text-[#d97706] shrink-0" />
-                    <span className="font-extrabold text-[#1f242c] truncate tabular-nums">
+                    <Lightbulb className="w-4 h-4 text-[#fbbf24] shrink-0" />
+                    <span className="font-extrabold text-[#edf3fc] truncate tabular-nums">
                       Solution · {solutionPushes.length} Pushes
                     </span>
                   </div>
@@ -1389,7 +1389,7 @@ export default function App() {
                         setHintSteps([]);
                         setIsSolutionAutoPlaying(false);
                       }}
-                      className="p-1.5 rounded-xl bg-[#eae4d7] text-[#5c5549] hover:text-[#1f242c] cursor-pointer"
+                      className="p-1.5 rounded-xl bg-[#1b2f50] text-[#9bb0cf] hover:text-white cursor-pointer"
                       title="Hide Solution Guide"
                     >
                       <X className="w-4 h-4" />
@@ -1412,8 +1412,8 @@ export default function App() {
                         }}
                         className={`px-2 py-0.5 rounded-lg font-mono text-[11px] font-bold shrink-0 border transition-all cursor-pointer tabular-nums ${
                           isActive
-                            ? 'bg-[#d97706] text-white border-[#b45309] shadow-xs'
-                            : 'bg-[#eae4d7] text-[#4e483e] border-[#d4cbb9] hover:bg-[#f5ebd6]'
+                            ? 'bg-[#d97706] text-white border-[#f59e0b] shadow-xs'
+                            : 'bg-[#1a2c4a] text-[#c9d7ee] border-[#2b436b] hover:bg-[#233a61]'
                         }`}
                       >
                         #{p.pushNumber} {arrowChar}
@@ -1424,20 +1424,20 @@ export default function App() {
 
                 {/* Push Step Details & Action Controls */}
                 {activePush && (
-                  <div className="flex items-center justify-between pt-1.5 border-t border-[#e4ddd0] text-[11px] text-[#5c5549] font-medium gap-2">
+                  <div className="flex items-center justify-between pt-1.5 border-t border-[#22385c] text-[11px] text-[#9bb0cf] font-medium gap-2">
                     <div className="flex items-center gap-1.5 truncate">
-                      <span className="px-1.5 py-0.5 rounded bg-[#fef3c7] border border-[#f59e0b]/40 text-[#92400e] font-bold font-mono tabular-nums">
+                      <span className="px-1.5 py-0.5 rounded bg-[#38230a] border border-[#d97706]/50 text-[#fcd34d] font-bold font-mono tabular-nums">
                         Push {activePush.pushNumber}/{solutionPushes.length}
                       </span>
                       <span className="truncate">
-                        Move core <b className="text-[#1f242c]">{activePush.dir}</b> ({activePush.from.x},{activePush.from.y})
+                        Move core <b className="text-[#edf3fc]">{activePush.dir}</b> ({activePush.from.x},{activePush.from.y})
                       </span>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={handleStepNextPush}
-                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#fef3c7] hover:bg-[#fde68a] border border-[#f59e0b]/40 text-[#92400e] font-bold cursor-pointer"
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#38230a] hover:bg-[#4c300f] border border-[#d97706]/55 text-[#fcd34d] font-bold cursor-pointer"
                         title="Demonstrate the next single cube push"
                       >
                         <StepForward className="w-3 h-3" />
@@ -1446,7 +1446,7 @@ export default function App() {
 
                       <button
                         onClick={handleResetLevel}
-                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#eae4d7] hover:bg-[#dfd8c8] border border-[#ccc3b3] text-[#3f3a32] font-semibold cursor-pointer"
+                        className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[#1b2f50] hover:bg-[#233b63] border border-[#2f4b78] text-[#dbe7fa] font-semibold cursor-pointer"
                         title="Reset board to try moves yourself"
                       >
                         <RotateCcw className="w-3 h-3" />
@@ -1480,12 +1480,12 @@ export default function App() {
 
             {/* Tactical Power Core Status Bar */}
             {levelData.plates.length > 0 && (
-              <div className="w-full max-w-sm mx-auto mt-2 flex items-center justify-between px-3 py-2 rounded-2xl bg-[#f7f4ed] border border-[#d5cdc0] text-xs font-mono shadow-xs select-none">
+              <div className="w-full max-w-sm mx-auto mt-2 flex items-center justify-between px-3 py-2 rounded-2xl bg-[#14233c] border border-[#263c61] text-xs font-mono shadow-md select-none">
                 <div className="flex items-center gap-2">
-                  <Zap className={`w-4 h-4 shrink-0 ${allPlatesCovered ? 'text-[#0f766e]' : 'text-[#d97706]'}`} />
-                  <span className="text-[#5c5549] font-bold tabular-nums">
+                  <Zap className={`w-4 h-4 shrink-0 ${allPlatesCovered ? 'text-[#2dd4bf]' : 'text-[#fbbf24]'}`} />
+                  <span className="text-[#90a7c7] font-bold tabular-nums">
                     POWER CORES:{' '}
-                    <b className={allPlatesCovered ? 'text-[#0f766e] font-black' : 'text-[#b45309] font-black'}>
+                    <b className={allPlatesCovered ? 'text-[#5eead4] font-black' : 'text-[#fcd34d] font-black'}>
                       {coveredPlatesCount} / {levelData.plates.length}
                     </b>
                   </span>
@@ -1493,8 +1493,8 @@ export default function App() {
                 <div
                   className={`flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-lg border ${
                     allPlatesCovered
-                      ? 'bg-[#e6f4f1] text-[#0f766e] border-[#99d6cb]'
-                      : 'bg-[#eae4d7] text-[#4e483e] border-[#ccc3b3]'
+                      ? 'bg-[#0e393a] text-[#5eead4] border-[#14b8a6]/50'
+                      : 'bg-[#1b2f50] text-[#c9d7ee] border-[#2f4b78]'
                   }`}
                 >
                   {allPlatesCovered ? (
@@ -1504,7 +1504,7 @@ export default function App() {
                     </>
                   ) : (
                     <>
-                      <Lock className="w-3.5 h-3.5 text-[#b45309] shrink-0" />
+                      <Lock className="w-3.5 h-3.5 text-[#f59e0b] shrink-0" />
                       <span>EXIT LOCKED</span>
                     </>
                   )}

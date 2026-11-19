@@ -27,46 +27,46 @@ export const ShopModal: React.FC<ShopModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#1f242c]/60 backdrop-blur-sm flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
-      <div className="w-full max-w-md bg-[#f7f4ed] border border-[#d5cdc0] rounded-3xl flex flex-col overflow-hidden shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e4ddd0] bg-[#efeae0]">
+    <div className="fixed inset-0 z-50 bg-[#050a14]/75 backdrop-blur-sm flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-[#14233c] border border-[#2a4269] rounded-3xl flex flex-col overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#22385c] bg-[#101c31]">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center text-[#b45309]">
+            <div className="w-9 h-9 rounded-xl bg-[#38230a] border border-[#d97706]/50 flex items-center justify-center text-[#fbbf24]">
               <Award className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-[#1f242c]">Hint Shop</h2>
-              <p className="text-xs text-[#665f54]">1 Point per cleared chamber · 10 pts = 1 hint</p>
+              <h2 className="text-base font-extrabold text-[#edf3fc]">Hint Shop</h2>
+              <p className="text-xs text-[#90a7c7]">1 Point per cleared chamber · 10 pts = 1 hint</p>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="p-1.5 rounded-xl bg-[#e3dccf] text-[#4e483e] hover:text-[#1f242c] transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl bg-[#1b2f50] text-[#9bb0cf] hover:text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Balance Strip */}
-        <div className="p-4 bg-[#f2ede3] border-b border-[#e4ddd0] flex items-center justify-around">
+        <div className="p-4 bg-[#111f36] border-b border-[#22385c] flex items-center justify-around">
           <div className="flex flex-col items-center">
-            <span className="text-xs text-[#665f54] font-medium">Points Balance</span>
+            <span className="text-xs text-[#90a7c7] font-medium">Points Balance</span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <Award className="w-4 h-4 text-[#d97706]" />
-              <span className="text-xl font-bold font-mono text-[#92400e] tabular-nums">
+              <Award className="w-4 h-4 text-[#f59e0b]" />
+              <span className="text-xl font-bold font-mono text-[#fcd34d] tabular-nums">
                 {progress.points}
               </span>
             </div>
           </div>
 
-          <div className="w-px h-8 bg-[#d5cdc0]" />
+          <div className="w-px h-8 bg-[#263c61]" />
 
           <div className="flex flex-col items-center">
-            <span className="text-xs text-[#665f54] font-medium">Available Hints</span>
+            <span className="text-xs text-[#90a7c7] font-medium">Available Hints</span>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <Lightbulb className="w-4 h-4 text-[#0d9488]" />
-              <span className="text-xl font-bold font-mono text-[#0f766e] tabular-nums">
+              <Lightbulb className="w-4 h-4 text-[#14b8a6]" />
+              <span className="text-xl font-bold font-mono text-[#5eead4] tabular-nums">
                 {progress.helpsRemaining}
               </span>
             </div>
@@ -74,7 +74,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
         </div>
 
         {purchaseSuccess && (
-          <div className="mx-4 mt-3 px-3 py-2 rounded-xl bg-[#e6f4f1] border border-[#0d9488]/40 text-[#0f766e] text-xs flex items-center gap-2 font-semibold">
+          <div className="mx-4 mt-3 px-3 py-2 rounded-xl bg-[#0e393a] border border-[#14b8a6]/50 text-[#5eead4] text-xs flex items-center gap-2 font-semibold">
             <Check className="w-4 h-4" />
             <span>{purchaseSuccess}</span>
           </div>
@@ -82,14 +82,14 @@ export const ShopModal: React.FC<ShopModalProps> = ({
 
         <div className="p-4 space-y-2.5">
           {/* 1 Hint */}
-          <div className="p-3.5 rounded-2xl bg-white/85 border border-[#d8d0c2] flex items-center justify-between gap-3">
+          <div className="p-3.5 rounded-2xl bg-[#1a2c4a] border border-[#2b436b] flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center text-[#b45309]">
+              <div className="w-10 h-10 rounded-xl bg-[#38230a] border border-[#d97706]/50 flex items-center justify-center text-[#fbbf24]">
                 <Lightbulb className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#1f242c]">1 Chamber Hint</span>
-                <span className="text-xs text-[#665f54]">Full push arrows & auto-solve</span>
+                <span className="text-sm font-bold text-[#edf3fc]">1 Chamber Hint</span>
+                <span className="text-xs text-[#90a7c7]">Full push arrows & auto-solve</span>
               </div>
             </div>
 
@@ -99,7 +99,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               className={`px-3.5 py-2 rounded-xl text-xs font-bold font-mono tabular-nums whitespace-nowrap transition-all cursor-pointer ${
                 progress.points >= 10
                   ? 'bg-[#d97706] hover:bg-[#b45309] text-white active:scale-95'
-                  : 'bg-[#e8e2d6] text-[#9b9282] cursor-not-allowed'
+                  : 'bg-[#122038] text-[#5c7499] cursor-not-allowed'
               }`}
             >
               10 pts
@@ -107,14 +107,14 @@ export const ShopModal: React.FC<ShopModalProps> = ({
           </div>
 
           {/* 3 Hints Pack */}
-          <div className="p-3.5 rounded-2xl bg-white/95 border border-[#d97706]/50 flex items-center justify-between gap-3">
+          <div className="p-3.5 rounded-2xl bg-[#1a2c4a] border border-[#d97706]/55 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#e6f4f1] border border-[#0d9488]/40 flex items-center justify-center text-[#0f766e]">
+              <div className="w-10 h-10 rounded-xl bg-[#0e393a] border border-[#14b8a6]/45 flex items-center justify-center text-[#2dd4bf]">
                 <Sparkles className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#1f242c]">3 Hints Pack · Save 5 pts</span>
-                <span className="text-xs text-[#665f54]">Three full chamber solutions</span>
+                <span className="text-sm font-bold text-[#edf3fc]">3 Hints Pack · Save 5 pts</span>
+                <span className="text-xs text-[#90a7c7]">Three full chamber solutions</span>
               </div>
             </div>
 
@@ -124,7 +124,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               className={`px-3.5 py-2 rounded-xl text-xs font-bold font-mono tabular-nums whitespace-nowrap transition-all cursor-pointer ${
                 progress.points >= 25
                   ? 'bg-[#0f766e] hover:bg-[#115e59] text-white active:scale-95'
-                  : 'bg-[#e8e2d6] text-[#9b9282] cursor-not-allowed'
+                  : 'bg-[#122038] text-[#5c7499] cursor-not-allowed'
               }`}
             >
               25 pts
@@ -132,14 +132,14 @@ export const ShopModal: React.FC<ShopModalProps> = ({
           </div>
 
           {/* 10 Hints Vault */}
-          <div className="p-3.5 rounded-2xl bg-white/85 border border-[#d8d0c2] flex items-center justify-between gap-3">
+          <div className="p-3.5 rounded-2xl bg-[#1a2c4a] border border-[#2b436b] flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#eae4d7] border border-[#ccc3b3] flex items-center justify-center text-[#282e37]">
+              <div className="w-10 h-10 rounded-xl bg-[#22385c] border border-[#3a5c91] flex items-center justify-center text-[#dbe7fa]">
                 <Trophy className="w-5 h-5" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#1f242c]">10 Hints Vault</span>
-                <span className="text-xs text-[#665f54]">Master supply for hard chambers</span>
+                <span className="text-sm font-bold text-[#edf3fc]">10 Hints Vault</span>
+                <span className="text-xs text-[#90a7c7]">Master supply for hard chambers</span>
               </div>
             </div>
 
@@ -148,8 +148,8 @@ export const ShopModal: React.FC<ShopModalProps> = ({
               disabled={progress.points < 75}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold font-mono tabular-nums whitespace-nowrap transition-all cursor-pointer ${
                 progress.points >= 75
-                  ? 'bg-[#272d37] hover:bg-[#1f242c] text-white active:scale-95'
-                  : 'bg-[#e8e2d6] text-[#9b9282] cursor-not-allowed'
+                  ? 'bg-[#2a4572] hover:bg-[#35568c] text-white active:scale-95'
+                  : 'bg-[#122038] text-[#5c7499] cursor-not-allowed'
               }`}
             >
               75 pts
@@ -157,7 +157,7 @@ export const ShopModal: React.FC<ShopModalProps> = ({
           </div>
         </div>
 
-        <div className="p-3.5 bg-[#efeae0] border-t border-[#e4ddd0] text-center text-xs text-[#665f54]">
+        <div className="p-3.5 bg-[#101c31] border-t border-[#22385c] text-center text-xs text-[#90a7c7]">
           Solve any chamber to earn +1 point automatically.
         </div>
       </div>

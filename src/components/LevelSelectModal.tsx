@@ -21,31 +21,31 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
   const chapter = CHAPTERS[chapterId - 1] || CHAPTERS[0];
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#1f242c]/60 backdrop-blur-sm flex items-center justify-center p-3 select-none animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-[#f7f4ed] border border-[#d5cdc0] rounded-3xl flex flex-col max-h-[90vh] overflow-hidden shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#e4ddd0] bg-[#efeae0]">
+    <div className="fixed inset-0 z-50 bg-[#050a14]/75 backdrop-blur-sm flex items-center justify-center p-3 select-none animate-in fade-in duration-200">
+      <div className="w-full max-w-lg bg-[#14233c] border border-[#2a4269] rounded-3xl flex flex-col max-h-[90vh] overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#22385c] bg-[#101c31]">
           <div className="flex items-center gap-2">
             <button
               onClick={() => onChangeChapter(-1)}
               disabled={chapterId <= 1}
               aria-label="Previous Chapter"
-              className="p-1.5 rounded-xl bg-[#e3dccf] text-[#282e37] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#d8d0c2] cursor-pointer"
+              className="p-1.5 rounded-xl bg-[#1b2f50] text-[#edf3fc] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#233b63] cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
 
             <div>
-              <h2 className="text-sm font-extrabold text-[#1f242c]">
+              <h2 className="text-sm font-extrabold text-[#edf3fc]">
                 Chapter {chapterId}: {chapter.title}
               </h2>
-              <p className="text-[11px] text-[#665f54]">Select Chamber (1–100)</p>
+              <p className="text-[11px] text-[#90a7c7]">Select Chamber (1–100)</p>
             </div>
 
             <button
               onClick={() => onChangeChapter(1)}
               disabled={chapterId >= CHAPTERS.length}
               aria-label="Next Chapter"
-              className="p-1.5 rounded-xl bg-[#e3dccf] text-[#282e37] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#d8d0c2] cursor-pointer"
+              className="p-1.5 rounded-xl bg-[#1b2f50] text-[#edf3fc] disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#233b63] cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -54,7 +54,7 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
           <button
             onClick={onClose}
             aria-label="Close"
-            className="p-1.5 rounded-xl bg-[#e3dccf] text-[#4e483e] hover:text-[#1f242c] cursor-pointer"
+            className="p-1.5 rounded-xl bg-[#1b2f50] text-[#9bb0cf] hover:text-white cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -73,17 +73,17 @@ export const LevelSelectModal: React.FC<LevelSelectModalProps> = ({
                   onClick={() => onSelectLevel(chapterId, lvl)}
                   className={`aspect-square rounded-xl flex flex-col items-center justify-center p-1 text-xs font-mono font-bold tabular-nums transition-all cursor-pointer ${
                     isCurrent
-                      ? 'bg-[#272d37] text-white shadow-md scale-105 border border-[#d97706]'
+                      ? 'bg-[#d97706] text-white shadow-md scale-105 border border-[#fbbf24]'
                       : completedData
-                      ? 'bg-[#e6f4f1] border border-[#0d9488]/60 text-[#0f766e] hover:bg-[#d5ede8]'
-                      : 'bg-white/85 border border-[#d8d0c2] text-[#282e37] hover:bg-white'
+                      ? 'bg-[#0e393a] border border-[#14b8a6]/60 text-[#5eead4] hover:bg-[#134a4b]'
+                      : 'bg-[#1a2c4a] border border-[#2b436b] text-[#edf3fc] hover:bg-[#22395e]'
                   }`}
                 >
                   <span>{lvl}</span>
                   {completedData && (
                     <div className="flex items-center gap-0.5 mt-0.5">
                       {Array.from({ length: Math.min(completedData.stars || 1, 3) }).map((_, sIdx) => (
-                        <Star key={sIdx} className="w-2 h-2 fill-[#d97706] text-[#d97706]" />
+                        <Star key={sIdx} className="w-2 h-2 fill-[#fbbf24] text-[#fbbf24]" />
                       ))}
                     </div>
                   )}

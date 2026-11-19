@@ -138,13 +138,13 @@ export const GameBoard: React.FC<GameBoardProps> = ({
 
   return (
     <div className="relative w-full max-w-[460px] mx-auto aspect-square p-1.5 select-none flex items-center justify-center">
-      {/* Outer Sculpted Architectural Chassis */}
+      {/* Outer Sculpted Architectural Deep-Blue Chassis */}
       <div
         ref={boardRef}
-        className={`relative w-full h-full rounded-[26px] p-2.5 sm:p-3 touch-none border transition-colors shadow-[0_14px_30px_rgba(31,36,44,0.12),inset_0_1px_0_rgba(255,255,255,0.65)] ${
+        className={`relative w-full h-full rounded-[26px] p-2.5 sm:p-3 touch-none border transition-colors shadow-[0_18px_40px_rgba(4,9,20,0.6),inset_0_1px_0_rgba(148,180,235,0.16)] ${
           isHardcore
-            ? 'bg-[#e8dcd9] border-[#c89f9a]'
-            : 'bg-[#dfd9cc] border-[#c7bfb0]'
+            ? 'bg-[#25172b] border-[#6e324a]'
+            : 'bg-[#152540] border-[#2b4570]'
         }`}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -153,8 +153,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
       >
         {/* Recessed Playfield Well */}
         <div
-          className={`relative w-full h-full rounded-[18px] p-1.5 shadow-[inset_0_2px_6px_rgba(31,36,44,0.16)] ${
-            isHardcore ? 'bg-[#cfc0bd]' : 'bg-[#cbc4b6]'
+          className={`relative w-full h-full rounded-[18px] p-1.5 shadow-[inset_0_3px_8px_rgba(4,9,20,0.65)] ${
+            isHardcore ? 'bg-[#170e1c]' : 'bg-[#0b1526]'
           }`}
         >
           {/* Dynamic Grid Layout */}
@@ -193,36 +193,36 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     }}
                     className={`relative rounded-[7px] flex items-center justify-center transition-colors duration-150 cursor-pointer overflow-hidden ${
                       isWall
-                        ? 'bg-gradient-to-b from-[#545d6c] to-[#343b46] border-t border-[#7b8698]/70 shadow-[0_2px_0_#1e232a] z-10'
+                        ? 'bg-gradient-to-b from-[#2e4975] to-[#1a2c4a] border-t border-[#5a7eb8]/55 shadow-[0_2px_0_#070e1c] z-10'
                         : isExit
                         ? isExitUnlocked
-                          ? 'bg-[#d1fae5] border-2 border-[#0d9488] text-[#065f46]'
-                          : 'bg-[#f5e9e7] border border-[#c98a84] text-[#991b1b]'
+                          ? 'bg-[#b9ece0] border-2 border-[#0d9488] text-[#064e3b]'
+                          : 'bg-[#e7cbd2] border border-[#be123c]/60 text-[#881337]'
                         : isPlate
                         ? isPlateOccupied
-                          ? 'bg-[#ccfbf1] border border-[#0d9488] text-[#0f766e]'
-                          : 'bg-[#fef3c7]/80 border border-[#d97706]/55 text-[#92400e]'
+                          ? 'bg-[#b8ebe2] border border-[#0f766e] text-[#0f766e]'
+                          : 'bg-[#f4d8a8] border border-[#d97706]/80 text-[#92400e]'
                         : isApproachCell
-                        ? 'bg-[#fde68a]/85 border-2 border-[#d97706]'
+                        ? 'bg-[#fde08d] border-2 border-[#d97706]'
                         : isPushTargetCell
-                        ? 'bg-[#dbeafe] border-2 border-dashed border-[#0284c7]'
+                        ? 'bg-[#bae6fd] border-2 border-dashed border-[#0284c7]'
                         : isAdjacent
-                        ? 'bg-[#faf8f2] border border-[#d5cdc0]'
+                        ? 'bg-[#b6c8e3] border border-[#d0def2]/80'
                         : isCheckerAlt
-                        ? 'bg-[#f4f0e7] border border-[#e3dccf]'
-                        : 'bg-[#ede8dc] border border-[#ddd5c7]'
-                    } ${isTapped ? 'ring-2 ring-[#d97706]' : ''}`}
+                        ? 'bg-[#a3b8d9] border border-[#8ca4ca]/60'
+                        : 'bg-[#95accf] border border-[#8198be]/60'
+                    } ${isTapped ? 'ring-2 ring-[#f59e0b]' : ''}`}
                   >
                     {/* Subtle Floor Tile Inlay */}
                     {!isWall && !isExit && !isPlate && (
-                      <div className="w-1 h-1 rounded-full bg-[#8c8372]/25 pointer-events-none" />
+                      <div className="w-1 h-1 rounded-full bg-[#1e3357]/25 pointer-events-none" />
                     )}
 
-                    {/* Architectural Beveled Wall Tile */}
+                    {/* Architectural Beveled Deep-Blue Wall Tile */}
                     {isWall && (
                       <div className="w-full h-full p-[3px] pointer-events-none select-none flex items-center justify-center">
-                        <div className="w-full h-full rounded-[4px] bg-gradient-to-br from-[#646e7f]/55 to-[#2b313b]/60 border border-[#8a95a8]/25 flex items-center justify-center">
-                          <div className="w-1.5 h-1.5 rounded-[2px] bg-[#252a33]/60 border-t border-[#8b96aa]/30" />
+                        <div className="w-full h-full rounded-[4px] bg-gradient-to-br from-[#3c5e94]/55 to-[#14233c]/70 border border-[#678dc7]/25 flex items-center justify-center">
+                          <div className="w-1.5 h-1.5 rounded-[2px] bg-[#0d182b]/70 border-t border-[#6e94cc]/35" />
                         </div>
                       </div>
                     )}
@@ -232,15 +232,15 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                       <div className="w-full h-full flex flex-col items-center justify-center pointer-events-none px-0.5 leading-none">
                         {isExitUnlocked ? (
                           <>
-                            <DoorOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0d9488]" />
-                            <span className="text-[7px] font-extrabold tracking-wide text-[#065f46] mt-0.5">
+                            <DoorOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#0f766e]" />
+                            <span className="text-[7px] font-extrabold tracking-wide text-[#064e3b] mt-0.5">
                               OPEN
                             </span>
                           </>
                         ) : (
                           <>
-                            <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#b91c1c]" />
-                            <span className="text-[8px] font-mono font-bold text-[#991b1b] tabular-nums mt-0.5">
+                            <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#9f1239]" />
+                            <span className="text-[8px] font-mono font-bold text-[#881337] tabular-nums mt-0.5">
                               {coveredPlatesCount}/{level.plates.length}
                             </span>
                           </>
@@ -248,16 +248,16 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                       </div>
                     )}
 
-                    {/* Precision Brass/Jade Docking Pad (No Overflowing Text) */}
+                    {/* Precision Copper/Jade Docking Pad */}
                     {isPlate && (
                       <div className="w-[74%] h-[74%] rounded-[6px] flex items-center justify-center pointer-events-none">
                         {isPlateOccupied ? (
-                          <div className="w-full h-full rounded-[5px] bg-[#99f6e4]/60 border border-[#0d9488] flex items-center justify-center">
+                          <div className="w-full h-full rounded-[5px] bg-[#99f6e4]/65 border border-[#0f766e] flex items-center justify-center">
                             <Check className="w-3.5 h-3.5 text-[#0f766e] stroke-[3]" />
                           </div>
                         ) : (
-                          <div className="w-full h-full rounded-[5px] border-2 border-dashed border-[#d97706] flex items-center justify-center bg-[#fef3c7]/50">
-                            <div className="w-2.5 h-2.5 rotate-45 rounded-[2px] bg-[#d97706]/85 ring-2 ring-[#f59e0b]/25" />
+                          <div className="w-full h-full rounded-[5px] border-2 border-dashed border-[#b45309] flex items-center justify-center bg-[#fef3c7]/60">
+                            <div className="w-2.5 h-2.5 rotate-45 rounded-[2px] bg-[#d97706] ring-2 ring-[#f59e0b]/30" />
                           </div>
                         )}
                       </div>
@@ -266,7 +266,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     {/* Hint: Stand position */}
                     {isApproachCell && (
                       <div className="absolute inset-x-0 bottom-0.5 flex justify-center pointer-events-none z-15">
-                        <span className="px-1 rounded bg-[#d97706] text-white font-bold text-[7px] shadow-xs">
+                        <span className="px-1 rounded bg-[#b45309] text-white font-bold text-[7px] shadow-xs">
                           STAND
                         </span>
                       </div>
@@ -284,8 +284,8 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                     {/* Laser Gate Barrier */}
                     {isLaser && laserActive && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-                        <div className="w-full h-1.5 bg-rose-500 rounded-full" />
-                        <div className="absolute w-1.5 h-full bg-rose-500 rounded-full" />
+                        <div className="w-full h-1.5 bg-rose-600 rounded-full" />
+                        <div className="absolute w-1.5 h-full bg-rose-600 rounded-full" />
                       </div>
                     )}
 
@@ -314,7 +314,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                   onClick={() => handleCellClick(box.x, box.y)}
                   className={`absolute transition-all duration-150 ease-out z-20 cursor-pointer ${
                     isDeadlocked ? 'ring-2 ring-rose-500 rounded-lg' : ''
-                  } ${isNextToPush ? 'ring-2 ring-[#d97706] rounded-lg' : ''}`}
+                  } ${isNextToPush ? 'ring-2 ring-[#f59e0b] rounded-lg' : ''}`}
                   style={{
                     width: `${100 / level.width}%`,
                     height: `${100 / level.height}%`,
@@ -341,7 +341,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                         {activePush.dir === 'LEFT' && <MoveLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />}
                         {activePush.dir === 'RIGHT' && <MoveRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />}
                       </div>
-                      <span className="mt-0.5 px-1 rounded bg-[#1f242c] text-amber-300 text-[7px] font-mono font-bold shadow">
+                      <span className="mt-0.5 px-1 rounded bg-[#0b1628] text-amber-300 text-[7px] font-mono font-bold shadow">
                         #{activePush.pushNumber}
                       </span>
                     </div>

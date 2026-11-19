@@ -25,8 +25,8 @@ export const CubeBox: React.FC<CubeBoxProps> = ({
       <div
         className={`absolute bottom-0.5 w-[76%] h-2.5 rounded-full transition-all duration-200 ${
           isOnPlate
-            ? 'bg-[#0f766e]/30 blur-[2.5px]'
-            : 'bg-[#1f242c]/25 blur-[2px]'
+            ? 'bg-[#0f766e]/40 blur-[2.5px]'
+            : 'bg-[#081224]/40 blur-[2px]'
         }`}
       />
 
@@ -42,7 +42,7 @@ export const CubeBox: React.FC<CubeBoxProps> = ({
             <rect x="45" y="52" width="10" height="7" rx="1.5" fill="#f9fafb" />
           </svg>
         ) : (
-          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_3px_4px_rgba(31,36,44,0.22)]">
+          <svg viewBox="0 0 100 100" className="w-full h-full drop-shadow-[0_3px_5px_rgba(8,16,34,0.42)]">
             {/* 1. Inner Radiant Core */}
             <polygon
               points="36,49 50,57 50,73 36,65"

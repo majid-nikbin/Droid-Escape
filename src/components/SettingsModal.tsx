@@ -16,14 +16,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onClose,
 }) => {
   return (
-    <div className="fixed inset-0 z-50 bg-[#1f242c]/60 backdrop-blur-sm flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
-      <div className="w-full max-w-sm bg-[#f7f4ed] border border-[#d5cdc0] rounded-3xl flex flex-col overflow-hidden shadow-2xl">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e4ddd0] bg-[#efeae0]">
-          <h2 className="text-base font-extrabold text-[#1f242c]">Audio & Settings</h2>
+    <div className="fixed inset-0 z-50 bg-[#050a14]/75 backdrop-blur-sm flex items-center justify-center p-4 select-none animate-in fade-in duration-200">
+      <div className="w-full max-w-sm bg-[#14233c] border border-[#2a4269] rounded-3xl flex flex-col overflow-hidden shadow-2xl">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#22385c] bg-[#101c31]">
+          <h2 className="text-base font-extrabold text-[#edf3fc]">Audio & Settings</h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="p-1.5 rounded-xl bg-[#e3dccf] text-[#4e483e] hover:text-[#1f242c] transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl bg-[#1b2f50] text-[#9bb0cf] hover:text-white transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -33,12 +33,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Ambient Music */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#e6f4f1] border border-[#99d6cb] flex items-center justify-center text-[#0f766e]">
+              <div className="w-9 h-9 rounded-xl bg-[#0e393a] border border-[#14b8a6]/45 flex items-center justify-center text-[#2dd4bf]">
                 <Music className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#1f242c]">Ambient Music</span>
-                <span className="text-xs text-[#665f54]">Calm background synth</span>
+                <span className="text-sm font-bold text-[#edf3fc]">Ambient Music</span>
+                <span className="text-xs text-[#90a7c7]">Calm background synth</span>
               </div>
             </div>
 
@@ -46,7 +46,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               onClick={() => onUpdateSettings({ ...settings, musicEnabled: !settings.musicEnabled })}
               aria-label="Toggle Ambient Music"
               className={`w-12 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
-                settings.musicEnabled ? 'bg-[#0f766e]' : 'bg-[#cbc2b2]'
+                settings.musicEnabled ? 'bg-[#0f766e]' : 'bg-[#263c61]'
               }`}
             >
               <div
@@ -60,12 +60,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Sound Effects */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#e6f4f1] border border-[#99d6cb] flex items-center justify-center text-[#0f766e]">
+              <div className="w-9 h-9 rounded-xl bg-[#0e393a] border border-[#14b8a6]/45 flex items-center justify-center text-[#2dd4bf]">
                 <Volume2 className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#1f242c]">Sound Effects</span>
-                <span className="text-xs text-[#665f54]">Core knocks and footsteps</span>
+                <span className="text-sm font-bold text-[#edf3fc]">Sound Effects</span>
+                <span className="text-xs text-[#90a7c7]">Core knocks and footsteps</span>
               </div>
             </div>
 
@@ -73,7 +73,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               onClick={() => onUpdateSettings({ ...settings, sfxEnabled: !settings.sfxEnabled })}
               aria-label="Toggle Sound Effects"
               className={`w-12 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
-                settings.sfxEnabled ? 'bg-[#0f766e]' : 'bg-[#cbc2b2]'
+                settings.sfxEnabled ? 'bg-[#0f766e]' : 'bg-[#263c61]'
               }`}
             >
               <div
@@ -87,12 +87,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* Haptics */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center text-[#b45309]">
+              <div className="w-9 h-9 rounded-xl bg-[#38230a] border border-[#d97706]/50 flex items-center justify-center text-[#fbbf24]">
                 <Vibrate className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#1f242c]">Tactile Vibration</span>
-                <span className="text-xs text-[#665f54]">Haptic feedback on impact</span>
+                <span className="text-sm font-bold text-[#edf3fc]">Tactile Vibration</span>
+                <span className="text-xs text-[#90a7c7]">Haptic feedback on impact</span>
               </div>
             </div>
 
@@ -100,7 +100,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               onClick={() => onUpdateSettings({ ...settings, hapticsEnabled: !settings.hapticsEnabled })}
               aria-label="Toggle Tactile Vibration"
               className={`w-12 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
-                settings.hapticsEnabled ? 'bg-[#0f766e]' : 'bg-[#cbc2b2]'
+                settings.hapticsEnabled ? 'bg-[#0f766e]' : 'bg-[#263c61]'
               }`}
             >
               <div
@@ -111,7 +111,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </button>
           </div>
 
-          <div className="pt-3 border-t border-[#e4ddd0]">
+          <div className="pt-3 border-t border-[#22385c]">
             <button
               onClick={() => {
                 if (window.confirm('Reset all progress and points back to initial state?')) {
@@ -119,7 +119,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onClose();
                 }
               }}
-              className="w-full py-2.5 px-4 rounded-xl border border-rose-300 text-rose-800 bg-rose-50 hover:bg-rose-100 active:scale-95 transition-all text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-2.5 px-4 rounded-xl border border-rose-500/45 text-rose-300 bg-[#361321] hover:bg-[#47182b] active:scale-95 transition-all text-xs font-bold flex items-center justify-center gap-2 cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset Game Progress</span>

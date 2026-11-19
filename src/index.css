@@ -8,17 +8,17 @@
 @layer base {
   html,
   body {
-    background-color: #ece8df;
-    color: #1f242c;
+    background-color: #0b1628;
+    color: #edf3fc;
     font-family: var(--font-sans);
     -webkit-tap-highlight-color: transparent;
   }
 }
 
-.stone-canvas-bg {
-  background-color: #ece8df;
+.navy-canvas-bg {
+  background-color: #0b1628;
   background-image:
-    radial-gradient(at 15% 10%, rgba(255, 255, 255, 0.65) 0px, transparent 55%),
-    radial-gradient(at 85% 90%, rgba(217, 119, 6, 0.06) 0px, transparent 50%),
-    linear-gradient(180deg, #f2efe8 0%, #e7e2d7 100%);
+    radial-gradient(at 20% 8%, rgba(56, 114, 214, 0.14) 0px, transparent 55%),
+    radial-gradient(at 85% 92%, rgba(217, 119, 6, 0.06) 0px, transparent 50%),
+    linear-gradient(180deg, #101f38 0%, #091222 100%);
 }

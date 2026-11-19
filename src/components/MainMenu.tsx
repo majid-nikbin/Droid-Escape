@@ -24,21 +24,21 @@ export const MainMenu: React.FC<MainMenuProps> = ({
 
   return (
     <div className="w-full max-w-md mx-auto flex flex-col items-center justify-between min-h-screen px-5 py-7 select-none">
-      {/* Quiet Top Metadata Strip (Zero Pill Clutter) */}
-      <div className="w-full flex items-center justify-between text-xs text-[#615a4e] font-medium">
-        <span className="tracking-wide font-semibold text-[#3f3a32]">
+      {/* Quiet Top Metadata Strip */}
+      <div className="w-full flex items-center justify-between text-xs text-[#93a8c7] font-medium">
+        <span className="tracking-wide font-semibold text-[#c9d7ee]">
           20 Chapters · 2,000 Chambers
         </span>
-        <div className="flex items-center gap-2 font-mono tabular-nums text-[#3f3a32]">
-          <span>{progress.points} pts</span>
-          <span aria-hidden="true" className="text-[#c0b7a7]">·</span>
-          <span className="text-[#0f766e] font-bold">{progress.helpsRemaining} hints</span>
+        <div className="flex items-center gap-2 font-mono tabular-nums text-[#c9d7ee]">
+          <span className="text-[#fcd34d]">{progress.points} pts</span>
+          <span aria-hidden="true" className="text-[#354f7a]">·</span>
+          <span className="text-[#2dd4bf] font-bold">{progress.helpsRemaining} hints</span>
         </div>
       </div>
 
       {/* Hero Cube Plinth & Title */}
       <div className="flex flex-col items-center my-6 text-center">
-        <div className="relative w-28 h-28 mb-4 rounded-[28px] bg-[#2a303a] border border-[#434c5c] shadow-[0_18px_36px_rgba(31,36,44,0.18),inset_0_1px_0_rgba(255,255,255,0.14)] flex items-center justify-center">
+        <div className="relative w-28 h-28 mb-4 rounded-[28px] bg-[#14243e] border border-[#2d4875] shadow-[0_20px_44px_rgba(4,9,20,0.65),inset_0_1px_0_rgba(148,180,235,0.18)] flex items-center justify-center">
           <svg viewBox="0 0 100 100" className="w-20 h-20 drop-shadow-md">
             <polygon points="36,49 50,57 50,73 36,65" fill="#ea580c" />
             <polygon points="50,57 64,49 64,65 50,73" fill="#c2410c" />
@@ -51,11 +51,11 @@ export const MainMenu: React.FC<MainMenuProps> = ({
           </svg>
         </div>
 
-        <h1 className="text-3xl font-extrabold tracking-tight text-[#1f242c] mb-2">
+        <h1 className="text-3xl font-extrabold tracking-tight text-[#edf3fc] mb-2">
           Droid Escape
         </h1>
-        <p className="text-sm text-[#5c5549] max-w-xs leading-relaxed">
-          Slide isometric energy cores onto brass docking pads to unseal every chamber vault.
+        <p className="text-sm text-[#9bb0cf] max-w-xs leading-relaxed">
+          Slide isometric energy cores onto docking pads to unseal every chamber vault.
         </p>
       </div>
 
@@ -64,7 +64,7 @@ export const MainMenu: React.FC<MainMenuProps> = ({
         {/* Focal Primary CTA */}
         <button
           onClick={onContinue}
-          className="w-full py-4 px-5 rounded-2xl bg-[#272d37] hover:bg-[#1f242c] text-[#f9f6ef] shadow-[0_6px_0_#14181f,0_12px_24px_rgba(31,36,44,0.18)] active:translate-y-[2px] active:shadow-[0_3px_0_#14181f] transition-all flex items-center justify-between group cursor-pointer"
+          className="w-full py-4 px-5 rounded-2xl bg-[#1a2f52] hover:bg-[#213a63] border border-[#345487] text-[#edf3fc] shadow-[0_6px_0_#08101f,0_14px_28px_rgba(4,9,20,0.45)] active:translate-y-[2px] active:shadow-[0_3px_0_#08101f] transition-all flex items-center justify-between group cursor-pointer"
         >
           <div className="flex items-center gap-3.5">
             <div className="w-11 h-11 rounded-xl bg-[#d97706] text-white flex items-center justify-center shadow-inner">
@@ -79,75 +79,75 @@ export const MainMenu: React.FC<MainMenuProps> = ({
               </span>
             </div>
           </div>
-          <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white/10 text-white group-hover:translate-x-0.5 transition-transform whitespace-nowrap">
+          <span className="text-xs font-bold px-3 py-1.5 rounded-lg bg-[#274372] border border-[#3c609c] text-[#edf3fc] group-hover:translate-x-0.5 transition-transform whitespace-nowrap">
             Play →
           </span>
         </button>
 
-        {/* Secondary Stone Panel Rows */}
-        <div className="w-full rounded-2xl bg-[#f7f4ed] border border-[#d5cdc0] divide-y divide-[#e4ddd0] shadow-xs overflow-hidden mt-1">
+        {/* Secondary Deep-Blue Panel Rows */}
+        <div className="w-full rounded-2xl bg-[#14233c] border border-[#263c61] divide-y divide-[#1f3354] shadow-lg overflow-hidden mt-1">
           <button
             onClick={onOpenChapters}
-            className="w-full py-3.5 px-4 hover:bg-[#fcfaf5] transition-colors flex items-center justify-between text-left cursor-pointer"
+            className="w-full py-3.5 px-4 hover:bg-[#192b4a] transition-colors flex items-center justify-between text-left cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#eae4d7] border border-[#d4cbb9] flex items-center justify-center text-[#0f766e]">
+              <div className="w-9 h-9 rounded-xl bg-[#0e393a] border border-[#14b8a6]/45 flex items-center justify-center text-[#2dd4bf]">
                 <Grid className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#1f242c]">Chapters & Levels</span>
-                <span className="text-xs text-[#665f54] tabular-nums">
+                <span className="text-sm font-bold text-[#edf3fc]">Chapters & Levels</span>
+                <span className="text-xs text-[#90a7c7] tabular-nums">
                   {completedTotal} / 2,000 Completed
                 </span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-[#8c8374]" />
+            <ChevronRight className="w-4 h-4 text-[#6d83a6]" />
           </button>
 
           <button
             onClick={onOpenShop}
-            className="w-full py-3.5 px-4 hover:bg-[#fcfaf5] transition-colors flex items-center justify-between text-left cursor-pointer"
+            className="w-full py-3.5 px-4 hover:bg-[#192b4a] transition-colors flex items-center justify-between text-left cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#fef3c7] border border-[#f59e0b]/40 flex items-center justify-center text-[#b45309]">
+              <div className="w-9 h-9 rounded-xl bg-[#38230a] border border-[#d97706]/50 flex items-center justify-center text-[#fbbf24]">
                 <ShoppingBag className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#1f242c]">Hint Shop</span>
-                <span className="text-xs text-[#665f54]">
+                <span className="text-sm font-bold text-[#edf3fc]">Hint Shop</span>
+                <span className="text-xs text-[#90a7c7]">
                   Redeem 10 points for 1 chamber hint
                 </span>
               </div>
             </div>
-            <span className="text-xs font-mono font-bold text-[#92400e] tabular-nums">
+            <span className="text-xs font-mono font-bold text-[#fcd34d] tabular-nums">
               {progress.points} pts
             </span>
           </button>
 
           <button
             onClick={onOpenSettings}
-            className="w-full py-3.5 px-4 hover:bg-[#fcfaf5] transition-colors flex items-center justify-between text-left cursor-pointer"
+            className="w-full py-3.5 px-4 hover:bg-[#192b4a] transition-colors flex items-center justify-between text-left cursor-pointer"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#eae4d7] border border-[#d4cbb9] flex items-center justify-center text-[#4e483e]">
+              <div className="w-9 h-9 rounded-xl bg-[#1b2f50] border border-[#2f4b78] flex items-center justify-center text-[#b4c6e0]">
                 <Settings className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-sm font-bold text-[#1f242c]">Audio & Settings</span>
-                <span className="text-xs text-[#665f54]">Sound effects, music & haptics</span>
+                <span className="text-sm font-bold text-[#edf3fc]">Audio & Settings</span>
+                <span className="text-xs text-[#90a7c7]">Sound effects, music & haptics</span>
               </div>
             </div>
-            <ChevronRight className="w-4 h-4 text-[#8c8374]" />
+            <ChevronRight className="w-4 h-4 text-[#6d83a6]" />
           </button>
         </div>
       </div>
 
       {/* Quiet Footer */}
-      <footer className="w-full flex items-center justify-between text-xs text-[#665f54] pt-4 border-t border-[#d5cdc0]">
+      <footer className="w-full flex items-center justify-between text-xs text-[#8ba2c4] pt-4 border-t border-[#1e3252]">
         <span className="font-mono">v1.0.6</span>
         <button
           onClick={onOpenAbout}
-          className="hover:text-[#1f242c] transition-colors flex items-center gap-1.5 font-semibold cursor-pointer"
+          className="hover:text-[#edf3fc] transition-colors flex items-center gap-1.5 font-semibold cursor-pointer"
         >
           <Info className="w-3.5 h-3.5" />
           <span>About</span>
